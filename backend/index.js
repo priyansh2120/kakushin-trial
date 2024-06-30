@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth/auth.routes.js";
 import quizRoutes from "./routes/quiz/quiz.routes.js";
+import cors from "cors";
+
 
 dotenv.config();
 
@@ -12,7 +14,7 @@ const port = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
 
 

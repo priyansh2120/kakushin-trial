@@ -6,23 +6,32 @@ function Quiz({ userId }) {
   const [score, setScore] = useState(null);
 
   useEffect(() => {
-    fetch("/api/quiz/questions")
+    console.log("Fetching questions...");
+    fetch("http://localhost:5000/api/quiz/questions")
       .then((res) => res.json())
-      .then((data) => setQuestions(data));
+      .then((data) => {
+        console.log("Fetched questions:", data);
+        if (data.length > 0) {
+          setQuestions(data[0].questions);
+        }
+      })
+      .catch((error) => console.error("Error fetching questions:", error));
   }, []);
+  
 
-  const handleChange = (questionId, selectedAnswer) => {
-    setResponses({ ...responses, [questionId]: selectedAnswer });
+  const handleChange = (questionIndex, selectedAnswer) => {
+    setResponses({ ...responses, [questionIndex]: selectedAnswer });
   };
 
   const handleSubmit = () => {
-    fetch("/api/quiz/submit", {
+    fetch("http://localhost:5000/api/quiz/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ responses, username: userId }),
     })
       .then((res) => res.json())
-      .then((data) => setScore(data.score));
+      .then((data) => setScore(data.score))
+      .catch((error) => console.error("Error submitting quiz:", error));
   };
 
   if (score !== null) {
@@ -31,16 +40,16 @@ function Quiz({ userId }) {
 
   return (
     <div>
-      {questions.map((q, qIndex) => (
-        <div key={q._id}>
-          <h3>{q.questions[qIndex].question}</h3>
-          {q.questions[qIndex].options.map((option, optionIndex) => (
-            <label key={optionIndex}>
+      {questions.map((q, index) => (
+        <div key={index}>
+          <h3>{q.question}</h3>
+          {q.options.map((option) => (
+            <label key={option}>
               <input
                 type="radio"
-                name={q._id}
+                name={`question-${index}`}
                 value={option}
-                onChange={() => handleChange(q._id, option)}
+                onChange={() => handleChange(index, option)}
               />
               {option}
             </label>
