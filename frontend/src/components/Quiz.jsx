@@ -5,19 +5,19 @@ function Quiz({ userId }) {
   const [responses, setResponses] = useState({});
   const [score, setScore] = useState(null);
 
-  useEffect(() => {
-    console.log("Fetching questions...");
-    fetch("http://localhost:5000/api/quiz/questions")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched questions:", data);
-        if (data.length > 0) {
-          setQuestions(data[0].questions);
-        }
-      })
-      .catch((error) => console.error("Error fetching questions:", error));
-  }, []);
-  
+ useEffect(() => {
+  console.log("Fetching questions...");
+  fetch("http://localhost:5000/api/quiz/questions")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("Fetched questions:", data);
+      if (data.length > 0) {
+        setQuestions(data[0].questions);
+      }
+    })
+    .catch((error) => console.error("Error fetching questions:", error));
+}, []);
+
 
   const handleChange = (questionIndex, selectedAnswer) => {
     setResponses({ ...responses, [questionIndex]: selectedAnswer });
