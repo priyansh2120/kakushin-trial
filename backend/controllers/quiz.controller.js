@@ -2,10 +2,14 @@ import {Question, Response} from '../models/quiz.model.js';
 import User from '../models/user.model.js';
 
 export const quizQuestions = async (req, res) => {
-  const questions = await Question.find();
-  res.json(questions);
+  try {
+    const questions = await Question.find();
+    res.json(questions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
 };
-
 export const submitQuiz = async (req, res) => {
   app.post('/api/quiz/submit', async (req, res) => {
     const { responses, username} = req.body;

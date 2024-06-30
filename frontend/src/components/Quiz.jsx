@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 function Quiz({ userId }) {
   const [questions, setQuestions] = useState([]);
@@ -6,9 +6,9 @@ function Quiz({ userId }) {
   const [score, setScore] = useState(null);
 
   useEffect(() => {
-    fetch('/api/quiz/questions')
-      .then(res => res.json())
-      .then(data => setQuestions(data));
+    fetch("/api/quiz/questions")
+      .then((res) => res.json())
+      .then((data) => setQuestions(data));
   }, []);
 
   const handleChange = (questionId, selectedAnswer) => {
@@ -16,13 +16,13 @@ function Quiz({ userId }) {
   };
 
   const handleSubmit = () => {
-    fetch('/api/quiz/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ responses, username: userId})
+    fetch("/api/quiz/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ responses, username: userId }),
     })
-      .then(res => res.json())
-      .then(data => setScore(data.score));
+      .then((res) => res.json())
+      .then((data) => setScore(data.score));
   };
 
   if (score !== null) {
@@ -31,11 +31,11 @@ function Quiz({ userId }) {
 
   return (
     <div>
-      {questions.map(q => (
+      {questions.map((q, qIndex) => (
         <div key={q._id}>
-          <h3>{q.question}</h3>
-          {q.options.map(option => (
-            <label key={option}>
+          <h3>{q.questions[qIndex].question}</h3>
+          {q.questions[qIndex].options.map((option, optionIndex) => (
+            <label key={optionIndex}>
               <input
                 type="radio"
                 name={q._id}

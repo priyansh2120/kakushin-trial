@@ -5,8 +5,8 @@ import protectRoute from "../../middleware/protectRoute.js";
 
 const router = express.Router();
 
-router.get("/questions",protectRoute ,quizQuestions);
-router.post("/submit", protectRoute, submitQuiz);
+router.get("/questions" ,quizQuestions);
+router.post("/submit", submitQuiz);
 
 
 export default router;
