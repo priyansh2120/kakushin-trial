@@ -4,8 +4,9 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth/auth.routes.js";
 import quizRoutes from "./routes/quiz/quiz.routes.js";
+import expenseRoutes from "./routes/expenseTracker/expense.routes.js";
+import incomeRoutes from "./routes/expenseTracker/income.routes.js";
 import cors from "cors";
-
 
 dotenv.config();
 
@@ -16,16 +17,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
-
-
 app.use("/api/auth", authRoutes);
 app.use("/api/quiz", quizRoutes);
-
+app.use("/api/expense", expenseRoutes);
+app.use("/api/income", incomeRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-
 
 mongoose.connect(process.env.DB_URI).then(() => {
   console.log("connected to mongodb on", process.env.DB_URI);

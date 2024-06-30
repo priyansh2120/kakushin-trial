@@ -1,5 +1,23 @@
-// userSchema.js
+
 import mongoose from 'mongoose';
+
+const monthlySavingsSchema = new mongoose.Schema({
+  month: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 12
+  },
+  year: {
+    type: Number,
+    required: true
+  },
+  amount: {
+    type: Number,
+    default: 0
+  }
+});
+
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -88,6 +106,10 @@ const userSchema = new mongoose.Schema({
   address: {
     type: String,
     default: null
+  },
+  monthlySavings: {
+    type: [monthlySavingsSchema],
+    default: []
   }
 });
 
