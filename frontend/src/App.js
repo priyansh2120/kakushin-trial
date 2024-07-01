@@ -5,7 +5,6 @@ import Route from "./routes/Routes";
 function App() {
   return (
     <>
-      {/* <Quiz /> */}
       <Route />
     </>
   );
