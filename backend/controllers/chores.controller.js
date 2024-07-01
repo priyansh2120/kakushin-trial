@@ -78,7 +78,7 @@ export const completeChore = async (req, res) => {
   try {
     const { choreId } = req.params;
     const { userId, secretKey } = req.body;
-
+    const user = await User.findById(userId);
     // Find the existing chore
     const chore = await Chore.findById(choreId);
     if (!chore) {
@@ -97,15 +97,17 @@ export const completeChore = async (req, res) => {
       verifySecretKey(req, res, async () => {
         chore.isCompleted = true;
         chore.dateCompleted = new Date();
-
+        user.virtualCurrency+=10;
+        await user.save();
         await chore.save();
         res.json(chore);
       });
     } else {
       chore.isCompleted = true;
       chore.dateCompleted = new Date();
-
+      user.virtualCurrency+=5;
       await chore.save();
+      await user.save();
       res.json(chore);
     }
   } catch (error) {
