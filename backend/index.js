@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth/auth.routes.js";
 import quizRoutes from "./routes/quiz/quiz.routes.js";
 import expenseRoutes from "./routes/expenseTracker/expense.routes.js";
 import incomeRoutes from "./routes/expenseTracker/income.routes.js";
+import choreRoutes from "./routes/choresManagement/chores.routes.js"
 import cors from "cors";
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/expense", expenseRoutes);
 app.use("/api/income", incomeRoutes);
+app.use("/api/chore", choreRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

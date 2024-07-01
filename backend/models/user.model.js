@@ -110,6 +110,10 @@ const userSchema = new mongoose.Schema({
   monthlySavings: {
     type: [monthlySavingsSchema],
     default: []
+  },
+  parentSecretKey: {
+    type: String,
+    default: null
   }
 });
 
