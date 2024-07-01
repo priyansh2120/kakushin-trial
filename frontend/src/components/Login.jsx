@@ -26,6 +26,7 @@ const Login = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        credentials:'include',
       });
 
       const data = await response.json();
@@ -34,7 +35,7 @@ const Login = () => {
         setError(data.error);
         return;
       }
-
+      localStorage.setItem('userId', data._id);
       // Handle successful login (e.g., redirect or show a success message)
       console.log('Login successful', data);
     } catch (error) {
