@@ -1,5 +1,5 @@
-import {Question, Response} from '../models/quiz.model.js';
-import User from '../models/user.model.js';
+import { Question, Response } from "../models/quiz.model.js";
+import User from "../models/user.model.js";
 
 export const quizQuestions = async (req, res) => {
   try {
@@ -8,15 +8,15 @@ export const quizQuestions = async (req, res) => {
     console.log("here");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 export const submitQuiz = async (req, res) => {
   const results = req.body;
 
   // Example: Logging results to console (you can process and store these results as needed)
-  console.log('Received quiz results:', results);
+  console.log("Received quiz results:", results);
 
   // Response back to the client
-  res.json({ message: 'Results submitted successfully', results });
+  res.json({ message: "Results submitted successfully", results });
 };

@@ -34,7 +34,7 @@ export const addExpense = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
+    user.virtualCurrency+=necessityPercentage/10;
     const expense = new Expense({
       userId,
       amount,
@@ -43,10 +43,11 @@ export const addExpense = async (req, res) => {
       description,
       date,
     });
-
+    await user.save();
     await expense.save();
 
     // Update user's monthly savings
+    
     await updateMonthlySavings(userId, amount, date, false);
 
     res.status(201).json(expense);

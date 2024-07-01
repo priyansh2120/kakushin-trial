@@ -41,7 +41,8 @@ export const addIncome = async (req, res) => {
       source,
       description,
     });
-
+    user.virtualCurrency += 5;
+    await user.save();
     await income.save();
 
     // Update user's monthly savings
