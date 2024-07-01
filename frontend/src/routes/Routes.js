@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import {SignUp,Login,Quiz } from "../components/export";
-import ChoreManagement from "../pages/ChoreManagement";
+import {SignUp,Login,Quiz,ExpensePage} from "../components/export";
 
 const Routerapp = () => (
   <div className="App">
@@ -10,8 +9,8 @@ const Routerapp = () => (
       <Routes>
       <Route element={<Login />} path="/login" exact />
       <Route element={<SignUp />} path="/signup" exact />
-      <Route element={<Quiz />} path="/quiz" exact />
-      <Route element={<ChoreManagement />} path="/choremanagement" exact />
+      <Route element={<Quiz />} path="/quiz" exact />        
+      <Route element={<ExpensePage />} path="/expense" exact />        
       </Routes>
     </Router>
   </div>
