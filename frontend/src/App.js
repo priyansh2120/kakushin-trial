@@ -1,13 +1,13 @@
 import "./App.css";
-import Quiz from "./components/Quiz";
 import Route from "./routes/Routes";
-
+import { UserContext } from "./contexts/UserContext";
+import { useState } from "react";
 function App() {
+  const [user, setUser] = useState(null);
   return (
-    <>
-      {/* <Quiz /> */}
+    <UserContext.Provider value={{user, setUser}}>
       <Route />
-    </>
+    </UserContext.Provider>
   );
 }
 

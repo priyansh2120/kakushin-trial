@@ -11,7 +11,8 @@ const Routerapp = () => (
       <Route element={<Login />} path="/login" exact />
       <Route element={<SignUp />} path="/signup" exact />
       <Route element={<Quiz />} path="/quiz" exact />        
-      <Route element={<ExpensePage />} path="/expense" exact />        
+      <Route element={<ExpensePage />} path="/expense" exact />    
+      <Route element={<ChoreManagement />} path="/choremanagement" exact />    
       </Routes>
     </Router>
   </div>

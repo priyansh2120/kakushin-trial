@@ -46,6 +46,7 @@ const SignUp = () => {
         setError(data.error);
         return;
       }
+      localStorage.setItem('userId', data._id);
 
       // Handle successful signup (e.g., redirect or show a success message)
       console.log('Signup successful', data);

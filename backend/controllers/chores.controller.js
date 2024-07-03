@@ -97,7 +97,7 @@ export const completeChore = async (req, res) => {
       verifySecretKey(req, res, async () => {
         chore.isCompleted = true;
         chore.dateCompleted = new Date();
-        user.virtualCurrency+=10;
+        user.virtualCurrency += 10;
         await user.save();
         await chore.save();
         res.json(chore);
@@ -105,7 +105,7 @@ export const completeChore = async (req, res) => {
     } else {
       chore.isCompleted = true;
       chore.dateCompleted = new Date();
-      user.virtualCurrency+=5;
+      user.virtualCurrency += 5;
       await chore.save();
       await user.save();
       res.json(chore);
@@ -120,6 +120,25 @@ export const getChores = async (req, res) => {
     const { userId } = req.params;
     const chores = await Chore.find({ userId });
     res.json(chores);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteChore = async (req, res) => {
+  try {
+    const { choreId } = req.params;
+    const chore = await Chore.findById(choreId);
+    if (!chore) {
+      return res.status(404).json({ message: "Chore not found" });
+    }
+    if (chore.isCompleted) {
+      return res
+        .status(400)
+        .json({ message: "Cannot delete a completed chore" });
+    }
+    await chore.remove();
+    res.json({ message: "Chore deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

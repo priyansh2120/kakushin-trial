@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
+import App from "./App";
+import { UserContext} from "./contexts/UserContext";
 
 // import Route from "./routes/Routes";
 import App from "./App";
@@ -11,3 +13,4 @@ root.render(
     <App />
   </React.StrictMode>
 );
+  
