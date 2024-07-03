@@ -27,12 +27,20 @@ const Navbar = () => {
         ) : (
           <>
             <li>
-              <button className="bg-green-500 px-4 py-2 rounded">Sign up</button>
+              <Link to="/signup" className="bg-green-500 px-4 py-2 rounded">Sign up</Link>
             </li>
             <li>
-              <button className="bg-green-500 px-4 py-2 rounded">Login</button>
+              <Link to ="/login" className="bg-green-500 px-4 py-2 rounded">Login</Link>
             </li>
           </>
+        )}
+        {user && (
+          <li>
+            <Link onClick={()=>{
+                localStorage.removeItem('userId');
+                window.location.href = '/';
+            }} className="bg-red-500 px-4 py-2 rounded">Logout</Link>
+          </li>
         )}
       </ul>
     </nav>

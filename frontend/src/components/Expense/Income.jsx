@@ -12,6 +12,7 @@ const IncomePage = () => {
     description: '',
   });
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [editIncomeId, setEditIncomeId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -19,10 +20,26 @@ const IncomePage = () => {
 
   useEffect(() => {
     fetch(`http://localhost:5000/api/income/${userId}`)
-      .then(response => response.json())
-      .then(data => setIncomes(data))
-      .catch(error => console.error('Error fetching incomes:', error));
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setIncomes(data);
+        setError(null); // Clear any previous error
+      })
+      .catch(error => {
+        console.error('Error fetching incomes:', error);
+        setError(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [userId]);
+
+  
 
   const handleChange = (e) => {
     setFormData({
@@ -90,6 +107,7 @@ const IncomePage = () => {
       });
 
       setIncomes(incomes.filter(inc => inc._id !== id));
+      setLoading(false)
     } catch (error) {
       console.error('Error deleting income:', error);
     }
@@ -126,7 +144,7 @@ const IncomePage = () => {
     };
   };
 
-  return (
+  return loading?<> Loading...</>:(
     <div>
       <h1 className="text-2xl font-bold mb-4">Incomes</h1>
       <div>

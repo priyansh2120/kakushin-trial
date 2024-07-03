@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
-
-
+import React, { useEffect, useState } from 'react';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +7,15 @@ const Login = () => {
   });
 
   const [error, setError] = useState(null);
+
+  useEffect(()=> {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      // Redirect to the dashboard
+      window.location.href = '/expense';
+    }
+  }, []
+  );
 
 
   const handleChange = (e) => {
@@ -42,6 +49,8 @@ const Login = () => {
       // setUser(data);
       // Handle successful login (e.g., redirect or show a success message)
       console.log('Login successful', data);
+      
+      window.location.reload();
     } catch (error) {
       console.error('Error during login', error);
       setError('Internal Server Error');
