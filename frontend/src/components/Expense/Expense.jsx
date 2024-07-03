@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
+import ChartComponent from './ChartComponent'; // Import your newly created ChartComponent
+import 'chart.js/auto'; // Ensure Chart.js auto-registers components
 
 const ExpensePage = () => {
   const [expenses, setExpenses] = useState([]);
@@ -13,16 +15,18 @@ const ExpensePage = () => {
   const [editExpenseId, setEditExpenseId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const userId = localStorage.getItem("userId");
-  console.log("usr id is slkjjlkfjlj ",userId)
+  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/expense/${userId}`)
-      .then(response => response.json())
-      .then(data => setExpenses(data))
-      .catch(error => console.error('Error fetching expenses:', error));
+    if (userId) {
+      fetch(`http://localhost:5000/api/expense/${userId}`)
+        .then(response => response.json())
+        .then(data => setExpenses(data))
+        .catch(error => console.error('Error fetching expenses:', error));
+    }
   }, [userId]);
 
+  // Handle form changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -30,6 +34,7 @@ const ExpensePage = () => {
     });
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -73,6 +78,7 @@ const ExpensePage = () => {
     }
   };
 
+  // Handle edit expense
   const handleEdit = (expense) => {
     setFormData({
       amount: expense.amount,
@@ -84,6 +90,7 @@ const ExpensePage = () => {
     setIsModalOpen(true);
   };
 
+  // Handle delete expense
   const handleDelete = async (id) => {
     try {
       await fetch(`http://localhost:5000/api/expense/${id}`, {
@@ -96,6 +103,7 @@ const ExpensePage = () => {
     }
   };
 
+  // Toggle modal
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
     if (!isModalOpen) {
@@ -107,6 +115,47 @@ const ExpensePage = () => {
       });
       setEditExpenseId(null);
     }
+  };
+
+  // Prepare data for pie chart by category
+  const getCategoryData = () => {
+    const categoryData = expenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      return acc;
+    }, {});
+
+    return {
+      labels: Object.keys(categoryData),
+      datasets: [
+        {
+          data: Object.values(categoryData),
+          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+        },
+      ],
+    };
+  };
+
+  // Prepare data for pie chart by necessity
+  const getNecessityData = () => {
+    const necessityData = { Necessary: 0, Unnecessary: 0 };
+
+    expenses.forEach(expense => {
+      if (expense.necessityPercentage > 50) {
+        necessityData.Necessary += expense.amount;
+      } else {
+        necessityData.Unnecessary += expense.amount;
+      }
+    });
+
+    return {
+      labels: ['Necessary', 'Unnecessary'],
+      datasets: [
+        {
+          data: [necessityData.Necessary, necessityData.Unnecessary],
+          backgroundColor: ['#FF6384', '#36A2EB'],
+        },
+      ],
+    };
   };
 
   return (
@@ -160,9 +209,10 @@ const ExpensePage = () => {
         <h2 className="text-xl font-bold mb-4">{editExpenseId ? 'Update Expense' : 'Add Expense'}</h2>
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="mb-4">
-            <label className="block mb-2">Amount</label>
+            <label htmlFor="amount" className="block mb-2">Amount</label>
             <input
               type="number"
+              id="amount"
               name="amount"
               value={formData.amount}
               onChange={handleChange}
@@ -171,9 +221,10 @@ const ExpensePage = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2">Category</label>
+            <label htmlFor="category" className="block mb-2">Category</label>
             <input
               type="text"
+              id="category"
               name="category"
               value={formData.category}
               onChange={handleChange}
@@ -182,9 +233,10 @@ const ExpensePage = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2">Necessity Percentage</label>
+            <label htmlFor="necessityPercentage" className="block mb-2">Necessity Percentage</label>
             <input
               type="number"
+              id="necessityPercentage"
               name="necessityPercentage"
               value={formData.necessityPercentage}
               onChange={handleChange}
@@ -193,9 +245,10 @@ const ExpensePage = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2">Description</label>
+            <label htmlFor="description" className="block mb-2">Description</label>
             <input
               type="text"
+              id="description"
               name="description"
               value={formData.description}
               onChange={handleChange}
@@ -212,6 +265,9 @@ const ExpensePage = () => {
           Close
         </button>
       </Modal>
+
+      <ChartComponent title="Expenses by Category" data={getCategoryData()} />
+      <ChartComponent title="Necessary vs Unnecessary Expenses" data={getNecessityData()} />
     </div>
   );
 };

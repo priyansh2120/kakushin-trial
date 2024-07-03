@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 
 const expenseSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId, 
     ref: 'User',
     required: true
-  },
+  }, 
   date: {
     type: Date,
     default: Date.now,
