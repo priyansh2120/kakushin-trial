@@ -8,7 +8,7 @@ const Landing = () => {
   return (
     <>
       <Navbar />
-    <div className="flex">
+    <div className="flex bg-gradient-to-r from-gray-600 to-gray-800 h-lvh">
       <div className="flex-1">
 
       <HeroSection />
