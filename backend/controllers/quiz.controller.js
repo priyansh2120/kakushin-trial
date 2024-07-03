@@ -15,7 +15,14 @@ export const submitQuiz = async (req, res) => {
   const results = req.body;
 
   // Example: Logging results to console (you can process and store these results as needed)
-  console.log("Received quiz results:", results);
+  console.log("Received quiz results:", results.score);
+  const userId = results.userId;
+  // console.log(userId);
+  const curruser = await User.findById(userId);
+  
+  curruser.score += results.score;
+  curruser.save();
+
 
   // Response back to the client
   res.json({ message: "Results submitted successfully", results });

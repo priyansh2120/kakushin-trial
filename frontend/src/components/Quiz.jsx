@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { UserContext } from "../contexts/UserContext";
+
 
 const Quiz=()=> {
   const [questions, setQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState({});
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     fetch('http://localhost:5000/api/quiz/questions')
@@ -40,7 +43,7 @@ const Quiz=()=> {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ results, score }),
+      body: JSON.stringify({ results, score, userId: user._id}),
     })
       .then(response => response.json())
       .then(data => {
