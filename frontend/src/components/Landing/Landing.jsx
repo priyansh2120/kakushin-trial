@@ -7,7 +7,6 @@ import FeaturesSection from './Features';
 const Landing = () => {
   return (
     <>
-      <Navbar />
     <div className="flex bg-gradient-to-r from-gray-600 to-gray-800 h-lvh">
       <div className="flex-1">
 
