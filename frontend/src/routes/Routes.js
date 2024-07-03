@@ -6,6 +6,7 @@ import ChoreManagement from "../pages/ChoreManagement";
 import MainLayout from "./Outlet";
 import { Leaderboard } from "../pages/Leaderboard";
 import ExpenseLeaderboard from "../pages/expenseLeaderboard";
+// import TwineStory from "../components/TwineStory";
 
 const Routerapp = () => (
   <div className="App">
@@ -20,7 +21,8 @@ const Routerapp = () => (
       <Route element={<ChoreManagement />} path="/choremanagement" exact />
       </Route>
       <Route element={<Leaderboard />} path="/leaderboard" exact />
-      <Route element={<expenseLeaderboard />} path="/expenseleaderboard" exact />
+      <Route element={<ExpenseLeaderboard />} path="/expenseleaderboard" exact />
+      {/* <Route element={<TwineStory />} path="/story" exact /> */}
       </Routes>
     </Router>
   </div>
