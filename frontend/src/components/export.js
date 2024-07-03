@@ -1,7 +1,7 @@
 import Login from "./Login";
 import SignUp from "./Signup";
 import Quiz from "./Quiz";
-import ExpensePage from "./Expense/Expense";
+import {ExpensePage} from "./Expense/export";
 
 export{
     Login,
