@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { UserContext } from "../contexts/UserContext";
 
-
-const Quiz=()=> {
+const Quiz = () => {
   const [questions, setQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
   const { user } = useContext(UserContext);
 
   useEffect(() => {
@@ -26,55 +26,72 @@ const Quiz=()=> {
   };
 
   const handleSubmit = () => {
-    // Map through the questions to create a results array
+    setShowResults(true);
+
     const results = questions.map((question, index) => ({
       question: question.question,
       correctAnswer: question.correctAnswer,
       userAnswer: userAnswers[index] || '',
       isCorrect: question.correctAnswer === (userAnswers[index] || ''),
     }));
-  
-    // Calculate the score based on the number of correct answers
+
     const score = results.reduce((acc, result) => acc + (result.isCorrect ? 1 : 0), 0);
-  
-    // Submit the results and score to the server
+
     fetch('http://localhost:5000/api/quiz/submit', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ results, score, userId: user._id}),
+      body: JSON.stringify({ results, score, userId: user._id }),
     })
       .then(response => response.json())
       .then(data => {
         console.log('Results submitted successfully:', data);
-        // You can handle the response data as needed
       })
       .catch(error => {
         console.error('There was an error submitting the results!', error);
       });
   };
-  
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 bg-gray-100 min-h-screen">
       <h1 className="text-2xl font-bold mb-4">Quiz</h1>
       {questions.map((question, index) => (
-        <div key={index} className="mb-4">
-          <h2 className="text-xl">{question.question}</h2>
-          {question.options.map((option, idx) => (
-            <div key={idx}>
-              <label>
-                <input
-                  type="radio"
-                  name={`question-${index}`}
-                  value={option}
-                  onChange={() => handleOptionChange(index, option)}
-                />
-                {option}
-              </label>
-            </div>
-          ))}
+        <div key={index} className="mb-8">
+          <h2 className="text-xl mb-4">{question.question}</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {question.options.map((option, idx) => {
+              const isSelected = userAnswers[index] === option;
+              const isCorrect = question.correctAnswer === option;
+              const isIncorrect = isSelected && !isCorrect;
+              const isUnanswered = !userAnswers[index] && !showResults;
+
+              let bgColor = 'bg-white';
+              if (showResults) {
+                bgColor = isCorrect ? 'bg-green-300' : isIncorrect ? 'bg-red-300' : isSelected ? 'bg-yellow-300' : 'bg-gray-200';
+              }
+
+              return (
+                <div
+                  key={idx}
+                  className={`p-4 border rounded cursor-pointer ${bgColor}`}
+                  onClick={() => handleOptionChange(index, option)}
+                >
+                  <label className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name={`question-${index}`}
+                      value={option}
+                      checked={userAnswers[index] === option}
+                      onChange={() => handleOptionChange(index, option)}
+                      className="hidden"
+                    />
+                    {option}
+                  </label>
+                </div>
+              );
+            })}
+          </div>
         </div>
       ))}
       <button
@@ -83,6 +100,11 @@ const Quiz=()=> {
       >
         Submit
       </button>
+      {showResults && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold">Your Score: {questions.filter((q, index) => q.correctAnswer === userAnswers[index]).length} / {questions.length}</h2>
+        </div>
+      )}
     </div>
   );
 }
