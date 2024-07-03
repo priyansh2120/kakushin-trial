@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +11,15 @@ const SignUp = () => {
     profession: '',
     income: '',
   });
+
+  useEffect(()=> {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      // Redirect to the dashboard
+      window.location.href = '/expense';
+    }
+  }, []
+  );
 
   const [error, setError] = useState(null);
 

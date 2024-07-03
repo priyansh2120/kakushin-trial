@@ -34,6 +34,14 @@ const Navbar = () => {
             </li>
           </>
         )}
+        {user && (
+          <li>
+            <Link onClick={()=>{
+                localStorage.removeItem('userId');
+                window.location.href = '/';
+            }} className="bg-red-500 px-4 py-2 rounded">Logout</Link>
+          </li>
+        )}
       </ul>
     </nav>
   );
