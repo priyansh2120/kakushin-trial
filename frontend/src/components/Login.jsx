@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useContext } from 'react';
-import {UserContext} from '../contexts/UserContext';
+
 
 
 const Login = () => {
@@ -10,7 +9,7 @@ const Login = () => {
   });
 
   const [error, setError] = useState(null);
-  const {user, setUser } = useContext(UserContext);
+
 
   const handleChange = (e) => {
     setFormData({
@@ -40,7 +39,7 @@ const Login = () => {
         return;
       }
       localStorage.setItem('userId', data._id);
-      setUser(data);
+      // setUser(data);
       // Handle successful login (e.g., redirect or show a success message)
       console.log('Login successful', data);
     } catch (error) {

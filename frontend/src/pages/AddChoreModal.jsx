@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AddChoreModal = ({ onClose, user }) => {
+const AddChoreModal = ({ onClose, user, refreshChores }) => {
   const [description, setDescription] = useState('');
   const [isParent, setIsParent] = useState(false);
   const [secretKey, setSecretKey] = useState('');
@@ -12,7 +12,7 @@ const AddChoreModal = ({ onClose, user }) => {
       userId: user._id,
       description,
       date: new Date(),
-      isParent: isParent && user.age <= 16,
+      addedByParent: isParent,
       secretKey: isParent ? secretKey : null,
     };
 
@@ -24,6 +24,7 @@ const AddChoreModal = ({ onClose, user }) => {
       body: JSON.stringify(chore),
     });
 
+    refreshChores((prev) => !prev); // Trigger a refresh
     onClose();
   };
 

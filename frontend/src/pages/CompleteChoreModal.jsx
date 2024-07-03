@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 
-const CompleteChoreModal = ({ onClose, chore, user }) => {
+const CompleteChoreModal = ({ onClose, chore, user, refreshChores }) => {
   const [secretKey, setSecretKey] = useState('');
 
   const handleComplete = async () => {
     const body = {
-      choreId: chore._id,
-      secretKey: chore.isParent ? secretKey : null,
+      userId: user._id,
+      secretKey: chore.addedByParent ? secretKey : null,
     };
 
-    await fetch('/api/chores/complete', {
-      method: 'POST',
+    await fetch(`http://localhost:5000/api/chore/${chore._id}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
 
+    refreshChores((prev) => !prev); // Trigger a refresh
     onClose();
   };
 
@@ -24,7 +25,7 @@ const CompleteChoreModal = ({ onClose, chore, user }) => {
     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
       <div className="bg-white p-6 rounded shadow-lg w-96">
         <h2 className="text-xl mb-4">Complete Chore</h2>
-        {chore.isParent && (
+        {chore.addedByParent && (
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2" htmlFor="secretKey">Parent Secret Key</label>
             <input
