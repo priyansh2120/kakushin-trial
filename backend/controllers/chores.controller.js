@@ -77,7 +77,7 @@ export const addChore = async (req, res) => {
 export const completeChore = async (req, res) => {
   try {
     const { choreId } = req.params;
-    const { userId, secretKey } = req.body;
+    const {userId, secretKey } = req.body;
     const user = await User.findById(userId);
     // Find the existing chore
     const chore = await Chore.findById(choreId);
