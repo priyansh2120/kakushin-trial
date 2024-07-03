@@ -219,10 +219,7 @@ const IncomePage = () => {
       </Modal>
 
       <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Income Distribution</h2>
         <ChartComponent data ={getIncomeChartData()} title="Income Distribution" />
-        {/* <Pie data={getIncomeChartData()} /> */}
-        {/* <Pie data={getIncomeChartData()} /> */}
       </div>
     </div>
   );
