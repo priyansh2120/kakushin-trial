@@ -1,0 +1,94 @@
+:: Start
+Welcome to the Financial Literacy Adventure!
+
+You are about to embark on a journey to learn about managing finances, tracking expenses, handling chores, and budgeting.
+
+[[Meet the Characters->Characters]]
+[[Start Tracking Expenses->Expense Tracking]]
+[[Manage Your Chores->Chore Management]]
+[[Play the Budgeting Game->Budgeting Game]]
+
+
+:: Characters
+Meet your guides on this journey:
+
+- **Arjun**: A young professional navigating his first job.
+- **Riya**: A high school student learning about savings.
+- **Vikram**: A freelancer balancing irregular income.
+
+[[Back to Start->Start]]
+[[Start Tracking Expenses->Expense Tracking]]
+[[Manage Your Chores->Chore Management]]
+[[Play the Budgeting Game->Budgeting Game]]
+
+
+
+:: Expense Tracking
+Tracking your expenses is crucial for financial health.
+
+<a href="http://localhost:3000/expense" target="_blank">Track your daily expenses</a>
+
+[[Back to Start->Start]]
+[[Meet the Characters->Characters]]
+[[Manage Your Chores->Chore Management]]
+[[Play the Budgeting Game->Budgeting Game]]
+
+
+:: Chore Management
+Managing your chores effectively helps you stay organized and productive.
+
+<a href="http://localhost:3000/choremanagement" target="_blank">Manage your chores</a>
+
+[[Back to Start->Start]]
+[[Meet the Characters->Characters]]
+[[Start Tracking Expenses->Expense Tracking]]
+[[Play the Budgeting Game->Budgeting Game]]
+
+
+:: Budgeting Game
+Welcome to the Budgeting Game! Here you'll learn how to allocate your monthly income wisely.
+
+You have a monthly income of ₹30,000. Your goal is to allocate this amount across different categories without exceeding your budget.
+
+[[Start the Game->Budgeting Start]]
+[[Back to Start->Start]]
+[[Meet the Characters->Characters]]
+[[Start Tracking Expenses->Expense Tracking]]
+[[Manage Your Chores->Chore Management]]
+
+
+:: Budgeting Start
+Let's start with allocating your budget. You have ₹30,000 to distribute across the following categories:
+
+- Rent
+- Groceries
+- Transportation
+- Savings
+- Entertainment
+
+[[Allocate Budget->Allocate]]
+
+:: Allocate
+How much do you want to allocate for Rent?
+<<textbox "$rent">>
+How much do you want to allocate for Groceries?
+<<textbox "$groceries">>
+How much do you want to allocate for Transportation?
+<<textbox "$transportation">>
+How much do you want to allocate for Savings?
+<<textbox "$savings">>
+How much do you want to allocate for Entertainment?
+<<textbox "$entertainment">>
+
+[[Submit->Submit Allocation]]
+
+
+:: Submit Allocation
+<<set $total to $rent + $groceries + $transportation + $savings + $entertainment>>
+<<if $total > 30000>>
+   You've exceeded your budget! Please try again.
+   [[Allocate Budget->Allocate]]
+<<else>>
+   Great job! You've successfully allocated your budget.
+   [[Back to Start->Start]]
+<</if>>

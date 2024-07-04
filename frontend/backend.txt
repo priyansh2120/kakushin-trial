@@ -1,0 +1,1142 @@
+Code:
+                                      Backend:
+                                      Controllers:
+                                      auth.controller.js:
+import bcrypt from "bcryptjs";
+import User from "../models/user.model.js";
+import generateTokenAndSetCookie from "../utils/generateToken.js";
+
+export const signup = async (req, res) => {
+	try {
+		const { name, username, password, confirmPassword, gender, age, profession, income } = req.body;
+
+		// Check if passwords match
+		if (password !== confirmPassword) {
+			return res.status(400).json({ error: "Passwords don't match" });
+		}
+
+		// Check if username already exists
+		const existingUser = await User.findOne({ username });
+		if (existingUser) {
+			return res.status(400).json({ error: "Username already exists" });
+		}
+
+		// Hash the password
+		const salt = await bcrypt.genSalt(10);
+		const hashedPassword = await bcrypt.hash(password, salt);
+
+		// Generate profile picture URL based on gender
+		const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${username}`;
+		const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
+
+		// Create new user
+		const newUser = new User({
+			name,
+			username,
+			password: hashedPassword,
+			gender,
+			profilePictureUrl: gender === "male" ? boyProfilePic : girlProfilePic,
+			age,
+			profession,
+			income,
+			country: null,
+			state: null,
+			city: null,
+			virtualCurrency: 0,
+			financialLiteracy: 0,
+			badge: [],
+			phoneNumber: null,
+			role: 'User',
+			financialGoals: null,
+			educationLevel: null,
+			address: null,
+			lastLogin: null
+		});
+
+		// Save the new user and generate token
+		await newUser.save();
+		generateTokenAndSetCookie(newUser._id, res);
+
+		// Send response
+		res.status(201).json({
+			_id: newUser._id,
+			name: newUser.name,
+			username: newUser.username,
+			profilePictureUrl: newUser.profilePictureUrl,
+		});
+	} catch (error) {
+		console.log("Error in signup controller", error.message);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
+
+export const login = async (req, res) => {
+	try {
+		const { username, password } = req.body;
+		const user = await User.findOne({ username });
+		const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
+
+		if (!user || !isPasswordCorrect) {
+			return res.status(400).json({ error: "Invalid username or password" });
+		}
+
+		generateTokenAndSetCookie(user._id, res);
+
+		res.status(200).json({
+			_id: user._id,
+			name: user.name,
+			username: user.username,
+			profilePic: user.profilePic,
+		});
+	} catch (error) {
+		console.log("Error in login controller", error.message);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
+
+export const logout = (req, res) => {
+	try {
+		res.cookie("jwt", "", { maxAge: 0 });
+		res.status(200).json({ message: "Logged out successfully" });
+	} catch (error) {
+		console.log("Error in logout controller", error.message);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
+
+export const updateUser = async (req, res) => {
+	try {
+		const { userId } = req.params;
+		const user = await User.findById(userId);
+		const updatedData = req.body;
+		try {
+			const updatedUser = await User.findOneAndUpdate(
+				{ username: username },
+				{ $set: updatedData },
+				{ new: true }
+			);
+	
+			if (!updatedUser) {
+				return res.status(404).send('User not found');
+			}
+	
+			res.send(updatedUser);
+		} catch (error) {
+			res.status(500).send(error.message);
+		}
+	}
+	catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+}
+
+
+                                      
+
+                </div>
+            </div>
+        </div >
+    );
+}
+
+export default Landing;
+
+chores.controller.js:
+import verifySecretKey from "../middleware/verifySecretkeychores.js";
+import User from "../models/user.model.js";
+import Chore from "../models/chore.model.js";
+import bcrypt from "bcryptjs";
+
+export const generateSecretKey = async (req, res) => {
+  try {
+    const { userId, secretKey } = req.body;
+
+    // Verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Hash the secret key
+    const hashedSecretKey = await bcrypt.hash(secretKey, 10);
+
+    // Update the user with the hashed secret key
+    user.parentSecretKey = hashedSecretKey;
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: "Secret key generated and stored successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const addChore = async (req, res) => {
+  try {
+    const { userId, description, addedByParent, secretKey } = req.body;
+
+    // Verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify if the request is made by a parent and validate the secret key if so
+    if (addedByParent) {
+      if (!secretKey) {
+        return res
+          .status(400)
+          .json({ message: "Secret key required for parent-added chores" });
+      }
+
+      req.body.secretKey = secretKey;
+      verifySecretKey(req, res, async () => {
+        const chore = new Chore({
+          userId,
+          description,
+          addedByParent,
+          addedBy: user._id,
+        });
+
+        await chore.save();
+        res.status(201).json(chore);
+      });
+    } else {
+      const chore = new Chore({
+        userId,
+        description,
+        addedByParent,
+        addedBy: user._id,
+      });
+
+      await chore.save();
+      res.status(201).json(chore);
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const completeChore = async (req, res) => {
+  try {
+    const { choreId } = req.params;
+    const {userId, secretKey } = req.body;
+    const user = await User.findById(userId);
+    // Find the existing chore
+    const chore = await Chore.findById(choreId);
+    if (!chore) {
+      return res.status(404).json({ message: "Chore not found" });
+    }
+
+    // Verify if the chore is added by a parent and validate the secret key if so
+    if (chore.addedByParent) {
+      if (!secretKey) {
+        return res.status(400).json({
+          message: "Secret key required for completing parent-added chores",
+        });
+      }
+
+      req.body.secretKey = secretKey;
+      verifySecretKey(req, res, async () => {
+        chore.isCompleted = true;
+        chore.dateCompleted = new Date();
+        user.virtualCurrency += 10;
+        await user.save();
+        await chore.save();
+        res.json(chore);
+      });
+    } else {
+      chore.isCompleted = true;
+      chore.dateCompleted = new Date();
+      user.virtualCurrency += 5;
+      await chore.save();
+      await user.save();
+      res.json(chore);
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const getChores = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const chores = await Chore.find({ userId });
+    res.json(chores);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteChore = async (req, res) => {
+  try {
+    const { choreId } = req.params;
+    const chore = await Chore.findById(choreId);
+    if (!chore) {
+      return res.status(404).json({ message: "Chore not found" });
+    }
+    if (chore.isCompleted) {
+      return res
+        .status(400)
+        .json({ message: "Cannot delete a completed chore" });
+    }
+    await chore.remove();
+    res.json({ message: "Chore deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+expense.controller.js:
+
+import User from "../models/user.model.js";
+import Expense from "../models/expense.model.js";
+import { calculatePoints } from "../utils/calculatePoints.js";
+const updateMonthlySavings = async (userId, amount, date, isIncome = true) => {
+  const user = await User.findById(userId);
+  const month = date.getMonth() + 1; // Months are zero-indexed
+  const year = date.getFullYear();
+  const amountToUpdate = isIncome ? amount : -amount;
+
+  // Check if there is already an entry for the specific month and year
+  let monthlySavingsEntry = user.monthlySavings.find(
+    (saving) => saving.month === month && saving.year === year
+  );
+
+  if (monthlySavingsEntry) {
+    // Update the existing entry
+    monthlySavingsEntry.amount += amountToUpdate;
+  } else {
+    // Add a new entry
+    user.monthlySavings.push({ month, year, amount: amountToUpdate });
+  }
+
+  await user.save();
+};
+
+export const addExpense = async (req, res) => {
+  try {
+    const { userId, amount, category, necessityPercentage, description } =
+      req.body;
+    const date = new Date();
+
+    // Verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.virtualCurrency+=necessityPercentage/10;
+    const expense = new Expense({
+      userId,
+      amount,
+      category,
+      necessityPercentage,
+      description,
+      date,
+    });
+    await user.save();
+    await expense.save();
+
+    // Update user's monthly savings
+    
+    await updateMonthlySavings(userId, amount, date, false);
+
+    res.status(201).json(expense);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const getExpenses = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const expenses = await Expense.find({ userId });
+    res.json(expenses);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const expense = await Expense.findByIdAndDelete(id);
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    // Update user's monthly savings
+    await updateMonthlySavings(
+      expense.userId,
+      -expense.amount,
+      expense.date,
+      false
+    );
+
+    res.json({ message: "Expense deleted" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, category, necessityPercentage, description } = req.body;
+
+    // Find the existing expense
+    const expense = await Expense.findById(id);
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    // Get the old amount for adjusting the savings
+    const oldAmount = expense.amount;
+
+    // Update the expense details
+    expense.amount = amount;
+    expense.category = category;
+    expense.necessityPercentage = necessityPercentage;
+    expense.description = description;
+
+    await expense.save();
+
+    const date = new Date(expense.date);
+    await updateMonthlySavings(expense.userId, -oldAmount, date, false); // Remove old amount
+    await updateMonthlySavings(expense.userId, amount, date, false); // Add new amount
+
+    res.json(expense);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
+export const getLeadeboard = async (req, res) => {
+  try {
+    const users = await User.find();
+    const leaderboard = await Promise.all(users.map(async (user) => {
+      const expenses = await Expense.find({ userId: user._id });
+      const points = calculatePoints(expenses);
+      return {
+        username: user.username,
+        points: points,
+        profilePictureUrl: user.profilePictureUrl,
+        financialLiteracy: user.financialLiteracy,
+        profession: user.profession
+      };
+    }));
+
+    // Sort the leaderboard by points in descending order
+    leaderboard.sort((a, b) => b.points - a.points);
+
+    // Split leaderboard into competitions
+    const competitions = [];
+    for (let i = 0; i < 5; i++) {
+      competitions.push({
+        competition: `Competition ${i + 1}`,
+        users: leaderboard.slice(i * 5, (i + 1) * 5)
+      });
+    }
+
+    res.json(competitions);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+extras.controllers.js:
+
+import User from '../models/user.model.js';
+export const userDetails = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).json(users);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+income.controller.js:
+import express from "express";
+import User from "../models/user.model.js";
+import Income from "../models/income.model.js";
+
+const updateMonthlySavings = async (userId, amount, date, isIncome = true) => {
+  const user = await User.findById(userId);
+  const month = date.getMonth() + 1; // Months are zero-indexed
+  const year = date.getFullYear();
+  const amountToUpdate = isIncome ? amount : -amount;
+
+  // Check if there is already an entry for the specific month and year
+  let monthlySavingsEntry = user.monthlySavings.find(
+    (saving) => saving.month === month && saving.year === year
+  );
+
+  if (monthlySavingsEntry) {
+    // Update the existing entry
+    monthlySavingsEntry.amount += amountToUpdate;
+  } else {
+    // Add a new entry
+    user.monthlySavings.push({ month, year, amount: amountToUpdate });
+  }
+
+  await user.save();
+};
+
+export const addIncome = async (req, res) => {
+  try {
+    const { userId, amount, source, description } = req.body;
+    const date = new Date();
+
+    // Verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const income = new Income({
+      userId,
+      amount,
+      source,
+      description,
+    });
+    user.virtualCurrency += 5;
+    await user.save();
+    await income.save();
+
+    // Update user's monthly savings
+    await updateMonthlySavings(userId, amount, date, true);
+
+    res.status(201).json(income);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const getIncomes = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const incomes = await Income.find({ userId });
+    res.json(incomes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteIncome = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const income = await Income.findByIdAndDelete(id);
+    if (!income) {
+      return res.status(404).json({ message: "Income not found" });
+    }
+
+    // Update user's monthly savings
+    await updateMonthlySavings(
+      income.userId,
+      -income.amount,
+      income.date,
+      true
+    );
+
+    res.json({ message: "Income deleted" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export const updateIncome = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, source, description } = req.body;
+    const income = await Income.findById(id);
+    if (!income) {
+      return res.status(404).json({ message: "Income not found" });
+    }
+    await updateMonthlySavings(
+      income.userId,
+      -income.amount,
+      income.date,
+      true
+    );
+    await updateMonthlySavings(income.userId, amount, income.date, true);
+    income.amount = amount;
+    income.source = source;
+    income.description = description;
+    await income.save();
+    res.json(income);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+quiz.controller.js:
+
+import { Question, Response } from "../models/quiz.model.js";
+import User from "../models/user.model.js";
+
+export const quizQuestions = async (req, res) => {
+  try {
+    const questions = await Question.find();
+    res.send(questions);
+    console.log("here");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+export const submitQuiz = async (req, res) => {
+  const results = req.body;
+
+  // Example: Logging results to console (you can process and store these results as needed)
+  console.log("Received quiz results:", results);
+  const userId = results.userId;
+  // console.log(userId);
+  const curruser = await User.findById(userId);
+  
+  curruser.score += results.score;
+  curruser.save();
+
+
+  // Response back to the client
+  res.json({ message: "Results submitted successfully", results });
+};
+
+middleware:
+
+protectroute.js
+
+    import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
+
+const protectRoute = async (req, res, next) => {
+	try {
+		const token = req.cookies.jwt;
+
+		if (!token) {
+			return res.status(401).json({ error: "Unauthorized - No Token Provided" });
+		}
+
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+		if (!decoded) {
+			return res.status(401).json({ error: "Unauthorized - Invalid Token" });
+		}
+
+		const user = await User.findById(decoded.userId).select("-password");
+
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		req.user = user;
+
+		next();
+	} catch (error) {
+		console.log("Error in protectRoute middleware: ", error.message);
+		res.status(500).json({ error: "Internal server error" });
+	}
+};
+
+export default protectRoute;
+
+verifysecretchors.js:
+
+
+import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
+
+const verifySecretKey = async (req, res, next) => {
+  const { userId, secretKey } = req.body;
+
+  // Fetch the user by ID
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Check if the provided secret key matches the stored hashed secret key
+  const isMatch = await bcrypt.compare(secretKey, user.parentSecretKey);
+  if (!isMatch) {
+    return res.status(401).json({ message: "Invalid secret key" });
+  }
+
+  next();
+};
+
+export default verifySecretKey;
+
+
+models:
+
+chore.model.js:
+
+import mongoose from 'mongoose';
+
+const choreSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  isCompleted: {
+    type: Boolean,
+    default: false
+  },
+  addedByParent: {
+    type: Boolean,
+    default: false
+  },
+  addedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  dateAdded: {
+    type: Date,
+    default: Date.now
+  },
+  dateCompleted: {
+    type: Date
+  }
+});
+
+export default mongoose.model('Chore', choreSchema);
+
+expense.model.js:
+// expenseSchema.js
+import mongoose from 'mongoose';
+
+const expenseSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',
+    required: true
+  }, 
+  date: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  category: {
+    type: String,
+    required: true
+  },
+  necessityPercentage: {
+    type: Number,
+    min: 0,
+    max: 100,
+    required: true
+  },
+  description: {
+    type: String,
+    default: null
+  }
+});
+
+export default mongoose.model('Expense', expenseSchema);
+
+income.model.js:
+import mongoose from "mongoose";
+
+const incomeSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+  source: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    default: null,
+  },
+});
+
+export default mongoose.model("Income", incomeSchema);
+
+quiz.model.js:
+
+
+import mongoose from "mongoose";
+
+const questionSchema = new mongoose.Schema({
+  category: String,
+  question: String,
+  options: [String],
+  correctAnswer: String
+});
+
+const responseSchema = new mongoose.Schema({
+  userId: String,
+  responses: [
+    {
+      questionId: mongoose.Schema.Types.ObjectId,
+      selectedAnswer: String,
+      isCorrect: Boolean
+    }
+  ],
+  score: Number
+});
+
+export const Question = mongoose.model("Question", questionSchema);
+export const Response = mongoose.model("Response", responseSchema);
+
+user.model.js:
+
+
+
+import mongoose from 'mongoose';
+
+const monthlySavingsSchema = new mongoose.Schema({
+  month: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 12
+  },
+  year: {
+    type: Number,
+    required: true
+  },
+  amount: {
+    type: Number,
+    default: 0
+  }
+});
+
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  age: {
+    type: Number,
+    required: true
+  },
+  country: {
+    type: String,
+    default: null
+  },
+  state: {
+    type: String,
+    default: null
+  },
+  city: {
+    type: String,
+    default: null
+  },
+  profession: {
+    type: String,
+    enum: ['Job', 'Student'],
+    required: true
+  },
+  income: {
+    type: Number,
+    default: null
+  },
+  virtualCurrency: {
+    type: Number,
+    default: 0
+  },
+  financialLiteracy: {
+    type: Number,
+    default: 0
+  },
+  badge: {
+    type: [String],
+    default: []
+  },
+  phoneNumber: {
+    type: String,
+    default: null
+  },
+  profilePictureUrl: {
+    type: String,
+    default: null
+  },
+  joinDate: {
+    type: Date,
+    default: Date.now
+  },
+  lastLogin: {
+    type: Date,
+    default: null
+  },
+  role: {
+    type: String,
+    enum: ['User', 'Admin'],
+    default: 'User'
+  },
+  financialGoals: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+  educationLevel: {
+    type: String,
+    default: null
+  },
+  gender: {
+    type: String,
+    required: true
+  },
+  address: {
+    type: String,
+    default: null
+  },
+  monthlySavings: {
+    type: [monthlySavingsSchema],
+    default: []
+  },
+  parentSecretKey: {
+    type: String,
+    default: null
+  }
+});
+
+export default mongoose.model('User', userSchema);
+
+routes:
+auth:
+auth.routes.js
+
+    import express from "express";
+
+import { login, logout, signup, updateUser } from "../../controllers/auth.controller.js";
+
+const router = express.Router();
+
+router.post("/signup", signup);
+
+router.post("/login", login);
+
+router.post("/logout", logout);
+
+router.post("/updateUser/:userId", updateUser);
+
+export default router;
+
+
+choresmanagement
+
+    chors.routes.js
+
+        import express from 'express';
+
+import { addChore, completeChore, getChores, generateSecretKey, deleteChore} from '../../controllers/chores.controller.js';
+
+const router = express.Router();
+
+router.post('/generateSecretKey', generateSecretKey);
+router.post('/add', addChore);
+router.get('/:userId', getChores);
+router.put('/:choreId', completeChore);
+router.delete('/:choreId', deleteChore);
+
+export default router;
+
+
+expensetracker
+
+    expenseroutes.js
+
+        import express from 'express';
+
+import { addExpense, deleteExpense, getExpenses, updateExpense, getLeadeboard } from '../../controllers/expense.controller.js';
+
+const router = express.Router();
+
+router.post('/add', addExpense);
+router.get('/:userId', getExpenses);
+router.delete('/:id', deleteExpense);
+router.put('/:id', updateExpense);
+router.get('/get/leaderboard', getLeadeboard);
+export default router;
+
+incomeroutes.js
+
+    import express from "express";
+const router = express.Router();
+
+import { addIncome, getIncomes, deleteIncome, updateIncome } from "../../controllers/income.controller.js";
+
+router.post("/add", addIncome);
+router.get("/:userId", getIncomes);
+router.delete("/:id", deleteIncome);
+router.put("/:id", updateIncome);
+
+
+export default router;
+
+
+extras
+
+    user routes.js
+
+        import express from 'express';
+import {userDetails, getAllUsers} from '../../controllers/extras.controller.js';
+
+const router = express.Router();
+router.get('/:userId', userDetails);
+router.get('/alluser/search', getAllUsers)
+
+export default router;
+
+quiz:
+
+quiz.routes.js:
+
+import express from "express";
+
+import { quizQuestions, submitQuiz } from "../../controllers/quiz.controller.js";
+import protectRoute from "../../middleware/protectRoute.js";
+
+const router = express.Router();
+
+router.get("/questions" ,quizQuestions);
+router.post("/submit", submitQuiz);
+
+
+export default router;
+
+utils:
+
+calculatepoints:
+export const calculatePoints = (expenses) => {
+  return expenses.reduce((total, expense) => {
+    const randomFactor = Math.random();
+    return total + expense.amount * randomFactor;
+  }, 0);
+};
+
+generatetoken.js:
+
+import jwt from "jsonwebtoken";
+
+const generateTokenAndSetCookie = (userId, res) => {
+	const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
+		expiresIn: "15d",
+	});
+
+	res.cookie("jwt", token, {
+		maxAge: 15 * 24 * 60 * 60 * 1000, // MS
+		httpOnly: true, 
+		sameSite: "strict", 
+		secure: process.env.NODE_ENV !== "development",
+	});
+};
+
+export default generateTokenAndSetCookie;
+
+index.js:
+
+
+import express from "express";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import authRoutes from "./routes/auth/auth.routes.js";
+import quizRoutes from "./routes/quiz/quiz.routes.js";
+import expenseRoutes from "./routes/expenseTracker/expense.routes.js";
+import incomeRoutes from "./routes/expenseTracker/income.routes.js";
+import choreRoutes from "./routes/choresManagement/chores.routes.js"
+import extrasRoutes from "./routes/extras/user.routes.js"
+import cors from "cors";
+
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 5000;
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+
+app.use("/api/auth", authRoutes);
+app.use("/api/quiz", quizRoutes);
+app.use("/api/expense", expenseRoutes);
+app.use("/api/income", incomeRoutes);
+app.use("/api/chore", choreRoutes);
+app.use("/api/extras", extrasRoutes)
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+mongoose.connect(process.env.DB_URI).then(() => {
+  console.log("connected to mongodb on", process.env.DB_URI);
+  app.listen(port, () => {
+    console.log(` listening on port ${port}`);
+  });
+});
+
+package.json
+
+
+    {
+  "name": "finlit",
+  "version": "1.0.0",
+  "description": "financial literacy backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Team Finlit Wizards",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.4"
+  }
+}
