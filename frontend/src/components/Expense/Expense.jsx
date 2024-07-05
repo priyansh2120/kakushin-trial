@@ -160,7 +160,7 @@ const ExpensePage = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Expenses</h1>
+      <h1 className="text-6xl font-extralight my-6">Expenses</h1>
       <div>
         <h2 className="text-xl font-bold mb-4">Your Expenses</h2>
         <ul>
@@ -201,7 +201,7 @@ const ExpensePage = () => {
           ))}
         </ul>
       </div>
-      <button onClick={toggleModal} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">
+      <button onClick={toggleModal} className="bg-blue-400 text-white px-4 py-2 rounded mb-4">
         Add Expense
       </button>
 

@@ -7,7 +7,7 @@ const Navbar = () => {
 
   return (
     <nav className="flex justify-between items-center p-6 bg-gray-900 text-white">
-      <div className="text-xl font-bold">Finlet</div>
+      <div className="text-xl font-bold"> <Link to="/">Finlet</Link> </div>
       <ul className="flex space-x-6">
         <li>
           <Link to="/expense">Expense Tracker</Link>

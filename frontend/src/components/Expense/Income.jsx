@@ -39,8 +39,6 @@ const IncomePage = () => {
       });
   }, [userId]);
 
-  
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -113,7 +111,6 @@ const IncomePage = () => {
     }
   };
 
-
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
     if (!isModalOpen) {
@@ -127,10 +124,23 @@ const IncomePage = () => {
   };
 
   const getIncomeChartData = () => {
-    const incomeTotal = incomes.reduce((total, income) => total + income.amount, 0);
-    const data = incomes.map(income => ({
-      label: income.source,
-      value: (income.amount / incomeTotal) * 100,
+    // Group incomes by source
+    const incomeBySource = incomes.reduce((acc, income) => {
+      if (acc[income.source]) {
+        acc[income.source] += income.amount;
+      } else {
+        acc[income.source] = income.amount;
+      }
+      return acc;
+    }, {});
+
+    // Calculate total income
+    const incomeTotal = Object.values(incomeBySource).reduce((total, amount) => total + amount, 0);
+
+    // Create data array
+    const data = Object.keys(incomeBySource).map(source => ({
+      label: source,
+      value: (incomeBySource[source] / incomeTotal) * 100,
     }));
 
     return {
@@ -144,9 +154,9 @@ const IncomePage = () => {
     };
   };
 
-  return loading?<> Loading...</>:(
+  return loading ? <>Loading...</> : (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Incomes</h1>
+      <h1 className="text-6xl font-extralight  my-6">Incomes</h1>
       <div>
         <h2 className="text-xl font-bold mb-4">Your Incomes</h2>
         <ul>
@@ -237,7 +247,7 @@ const IncomePage = () => {
       </Modal>
 
       <div className="mt-8">
-        <ChartComponent data ={getIncomeChartData()} title="Income Distribution" />
+        <ChartComponent data={getIncomeChartData()} title="Income Distribution" />
       </div>
     </div>
   );

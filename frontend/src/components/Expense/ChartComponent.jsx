@@ -6,6 +6,16 @@ const ChartComponent = ({ data, title }) => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false, // This ensures the chart fits within its container
+    plugins: {
+      legend: {
+        labels: {
+          color: 'white' ,
+          font: {
+            size: 16
+          }
+        }
+      }
+    }
   };
 
   return (

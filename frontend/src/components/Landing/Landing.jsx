@@ -1,8 +1,8 @@
 import React from "react";
-import Navbar from "../Navbar";
 import HeroSection from './HeroSection';
 import CustomerReview from './CustomerReview';
 import FeaturesSection from './Features';
+import Chatbot from "./Chatbot";
 
 const Landing = () => {
   return (
@@ -17,7 +17,11 @@ const Landing = () => {
       <FeaturesSection />
       </div>
       </div>
-      <div className="flex-1 text-8xl">Chatbot</div>
+      <div className="flex-1 text-8xl">Chatbot
+        <div>
+          {/* <Chatbot /> */}
+        </div>
+      </div>
     </div>
     </>
   );
