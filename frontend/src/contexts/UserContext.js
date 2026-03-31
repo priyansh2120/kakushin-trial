@@ -1,38 +1,58 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import API_BASE_URL from '../config';
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const userId = localStorage.getItem("userId");
-                if (userId) {
-                    const response = await fetch(`http://localhost:5000/api/extras/${userId}`);
-                    if (!response.ok) {
-                        throw new Error("Network response was not ok");
-                    }
-                    const data = await response.json();
-                    setUser(data);
+    const fetchUser = useCallback(async () => {
+        try {
+            const userId = localStorage.getItem("userId");
+            if (userId) {
+                const response = await fetch(`${API_BASE_URL}/api/extras/${userId}`, {
+                    credentials: 'include',
+                });
+                if (!response.ok) {
+                    localStorage.removeItem("userId");
+                    setUser(null);
+                    return;
                 }
-            } catch (error) {
-                setError(error.message);
-                console.error("Error fetching user data: ", error);
-            } finally {
-                setLoading(false);
+                const data = await response.json();
+                setUser(data);
             }
-        };
-
-        fetchUserData();
+        } catch (error) {
+            console.error("Error fetching user data: ", error);
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
+    useEffect(() => {
+        fetchUser();
+    }, [fetchUser]);
+
+    const logout = async () => {
+        try {
+            await fetch(`${API_BASE_URL}/api/auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+        } catch (e) {
+            // ignore
+        }
+        localStorage.removeItem('userId');
+        setUser(null);
+    };
+
+    const refreshUser = () => {
+        fetchUser();
+    };
 
     return (
-        <UserContext.Provider value={{ user, loading, error }}>
+        <UserContext.Provider value={{ user, setUser, loading, logout, refreshUser }}>
             {children}
         </UserContext.Provider>
     );
