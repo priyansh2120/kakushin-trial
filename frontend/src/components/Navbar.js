@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { UserContext } from "../contexts/UserContext";
-import { Menu, X, Coins, LogOut, User, Brain } from "lucide-react";
+import { Menu, X, Coins, LogOut, Brain } from "lucide-react";
 
 const Navbar = () => {
   const { user, loading, logout } = useContext(UserContext);
