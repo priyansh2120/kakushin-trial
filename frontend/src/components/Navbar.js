@@ -13,7 +13,9 @@ const Navbar = () => {
   const navLinks = user
     ? [
         { to: "/", label: "Home" },
-        { to: "/expense", label: "Expense Tracker" },
+        { to: "/expense", label: "Dashboard" },
+        { to: "/games", label: "Games" },
+        { to: "/missions", label: "Missions" },
         { to: "/choremanagement", label: "Chores" },
         { to: "/quiz", label: "Quiz" },
         { to: "/leaderboard", label: "Leaderboard" },

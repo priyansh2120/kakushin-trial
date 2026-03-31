@@ -1,28 +1,36 @@
-import React, { useState } from "react";
+import React from "react";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import {SignUp,Login,Quiz,ExpensePage,Landing} from "../components/export";
+import { SignUp, Login, Quiz, ExpensePage, Landing } from "../components/export";
 import ChoreManagement from "../pages/ChoreManagement";
 import MainLayout from "./Outlet";
 import { Leaderboard } from "../pages/Leaderboard";
-import ExpenseLeaderboard from "../pages/expenseLeaderboard";
-// import TwineStory from "../components/TwineStory";
+import DailyMissions from "../pages/DailyMissions";
+import StockSimulator from "../pages/StockSimulator";
+import BudgetChallenge from "../pages/BudgetChallenge";
+import GamesHub from "../pages/GamesHub";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const Routerapp = () => (
   <div className="App">
     <Router>
       <Routes>
-      <Route element={<MainLayout />}>
-      <Route element={<Landing />} path="/" exact />
-      <Route element={<Login />} path="/login" exact />
-      <Route element={<SignUp />} path="/signup" exact />
-      <Route element={<Quiz />} path="/quiz" exact />
-      <Route element={<ExpensePage />} path="/expense" exact />
-      <Route element={<ChoreManagement />} path="/choremanagement" exact />
-      </Route>
-      <Route element={<Leaderboard />} path="/leaderboard" exact />
-      <Route element={<ExpenseLeaderboard />} path="/expenseleaderboard" exact />
-      {/* <Route element={<TwineStory />} path="/story" exact /> */}
+        {/* Public routes with navbar */}
+        <Route element={<MainLayout />}>
+          <Route element={<Landing />} path="/" exact />
+          <Route element={<Login />} path="/login" exact />
+          <Route element={<SignUp />} path="/signup" exact />
+
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute><ExpensePage /></ProtectedRoute>} path="/expense" exact />
+          <Route element={<ProtectedRoute><ChoreManagement /></ProtectedRoute>} path="/choremanagement" exact />
+          <Route element={<ProtectedRoute><Quiz /></ProtectedRoute>} path="/quiz" exact />
+          <Route element={<ProtectedRoute><DailyMissions /></ProtectedRoute>} path="/missions" exact />
+          <Route element={<ProtectedRoute><GamesHub /></ProtectedRoute>} path="/games" exact />
+          <Route element={<ProtectedRoute><StockSimulator /></ProtectedRoute>} path="/games/stocks" exact />
+          <Route element={<ProtectedRoute><BudgetChallenge /></ProtectedRoute>} path="/games/budget" exact />
+          <Route element={<Leaderboard />} path="/leaderboard" exact />
+        </Route>
       </Routes>
     </Router>
   </div>
