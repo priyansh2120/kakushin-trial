@@ -1,6 +1,7 @@
 // src/components/Leaderboard.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../config';
 import 'tailwindcss/tailwind.css';
 
 const categoryStyles = {
@@ -16,7 +17,7 @@ const ExpenseLeaderboard = () => {
     useEffect(() => {
         const fetchLeaderboard = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/leaderboard');
+                const response = await axios.get(`${API_BASE_URL}/api/leaderboard`);
                 setCompetitions(response.data);
             } catch (error) {
                 console.error('Error fetching leaderboard:', error);

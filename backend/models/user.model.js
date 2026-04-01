@@ -20,6 +20,11 @@ const monthlySavingsSchema = new mongoose.Schema({
 
 
 const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    sparse: true,
+    unique: true,
+  },
   username: {
     type: String,
     required: true,

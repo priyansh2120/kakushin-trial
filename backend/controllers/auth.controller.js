@@ -62,6 +62,10 @@ export const signup = async (req, res) => {
 		});
 	} catch (error) {
 		console.log("Error in signup controller", error.message);
+		if (error.code === 11000) {
+			const key = error.keyPattern ? Object.keys(error.keyPattern)[0] : "username";
+			return res.status(400).json({ error: `${key} already exists` });
+		}
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
