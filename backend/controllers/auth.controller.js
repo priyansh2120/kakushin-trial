@@ -103,25 +103,33 @@ export const logout = (req, res) => {
 export const updateUser = async (req, res) => {
 	try {
 		const { userId } = req.params;
-		const user = await User.findById(userId);
 		const updatedData = req.body;
-		try {
-			const updatedUser = await User.findOneAndUpdate(
-				{ username: username },
-				{ $set: updatedData },
-				{ new: true }
-			);
-	
-			if (!updatedUser) {
-				return res.status(404).send('User not found');
-			}
-	
-			res.send(updatedUser);
-		} catch (error) {
-			res.status(500).send(error.message);
+
+		const updatedUser = await User.findByIdAndUpdate(
+			userId,
+			{ $set: updatedData },
+			{ new: true }
+		).select("-password -parentSecretKey");
+
+		if (!updatedUser) {
+			return res.status(404).json({ error: "User not found" });
 		}
-	}
-	catch (error) {
+
+		res.json(updatedUser);
+	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
-}
+};
+
+// Get currently authenticated user
+export const getMe = async (req, res) => {
+	try {
+		const user = await User.findById(req.user._id).select("-password -parentSecretKey");
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+		res.json(user);
+	} catch (error) {
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};

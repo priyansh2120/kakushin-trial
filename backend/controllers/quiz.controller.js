@@ -4,26 +4,45 @@ import User from "../models/user.model.js";
 export const quizQuestions = async (req, res) => {
   try {
     const questions = await Question.find();
-    res.send(questions);
-    console.log("here");
+    res.json(questions);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 export const submitQuiz = async (req, res) => {
-  const results = req.body;
+  try {
+    const { userId, score, results } = req.body;
 
-  // Example: Logging results to console (you can process and store these results as needed)
-  console.log("Received quiz results:", results);
-  const userId = results.userId;
-  // console.log(userId);
-  const curruser = await User.findById(userId);
-  
-  curruser.score += results.score;
-  curruser.save();
+    if (!userId || score === undefined) {
+      return res.status(400).json({ error: "userId and score are required" });
+    }
 
+    const curruser = await User.findById(userId);
+    if (!curruser) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-  // Response back to the client
-  res.json({ message: "Results submitted successfully", results });
+    curruser.financialLiteracy += score;
+    curruser.virtualCurrency += score * 2;
+    await curruser.save();
+
+    // Save the quiz response
+    const quizResponse = new Response({
+      userId,
+      responses: results || [],
+      score,
+    });
+    await quizResponse.save();
+
+    res.json({
+      message: "Results submitted successfully",
+      financialLiteracy: curruser.financialLiteracy,
+      virtualCurrency: curruser.virtualCurrency,
+    });
+  } catch (error) {
+    console.error("Quiz submit error:", error);
+    res.status(500).json({ error: "Failed to submit quiz results" });
+  }
 };

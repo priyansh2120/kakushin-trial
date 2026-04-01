@@ -137,7 +137,7 @@ export const deleteChore = async (req, res) => {
         .status(400)
         .json({ message: "Cannot delete a completed chore" });
     }
-    await chore.remove();
+    await Chore.findByIdAndDelete(choreId);
     res.json({ message: "Chore deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
