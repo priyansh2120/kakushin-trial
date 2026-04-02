@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import Expense from "../models/expense.model.js";
 import { calculatePoints } from "../utils/calculatePoints.js";
+import { classifyExpense, detectSpike } from "../services/intelligence/expenseIntelligenceService.js";
+import { onExpenseAdded } from "../services/intelligence/nudgeService.js";
 const updateMonthlySavings = async (userId, amount, date, isIncome = true) => {
   const user = await User.findById(userId);
   const month = date.getMonth() + 1; // Months are zero-indexed
@@ -50,7 +52,30 @@ export const addExpense = async (req, res) => {
     
     await updateMonthlySavings(userId, amount, date, false);
 
-    res.status(201).json(expense);
+    // AI Intelligence Pipeline: classify expense and trigger nudge evaluation
+    const classification = classifyExpense(expense);
+    let spikeInfo = { isSpike: false };
+    try {
+      const historicalExpenses = await Expense.find({ userId }).sort({ date: -1 }).limit(50);
+      spikeInfo = detectSpike(expense, historicalExpenses);
+    } catch {
+      // Non-critical: spike detection failure should not block expense creation
+    }
+
+    // Fire-and-forget nudge evaluation
+    onExpenseAdded(userId).catch((err) =>
+      console.error("Nudge evaluation error (non-blocking):", err.message)
+    );
+
+    res.status(201).json({
+      ...expense.toObject(),
+      intelligence: {
+        classification: classification.type,
+        confidence: classification.confidence,
+        isSpike: spikeInfo.isSpike,
+        spikeMultiplier: spikeInfo.multiplier || null,
+      },
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
