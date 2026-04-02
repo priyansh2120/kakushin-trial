@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Gamepad2, BarChart3, Target, Zap, Trophy, Brain } from 'lucide-react';
+import { Gamepad2, BarChart3, Target, Zap, Trophy, Brain, Briefcase } from 'lucide-react';
+import { UserContext } from '../contexts/UserContext';
 
-const games = [
+const baseGameCards = [
   {
     to: '/games/stocks',
     icon: BarChart3,
@@ -46,6 +47,25 @@ const games = [
 ];
 
 const GamesHub = () => {
+  const { user } = useContext(UserContext);
+
+  const games = useMemo(() => {
+    const baseGames = [...baseGameCards];
+
+    if (user?.profession === 'Job') {
+      baseGames.splice(3, 0, {
+        to: '/career-lab',
+        icon: Briefcase,
+        title: 'Career Finance Lab',
+        description: 'Practice ITR filing, TDS checks, EPF actions, and tax-regime choices through guided mock workflows.',
+        color: 'from-stone-700 to-emerald-700',
+        tag: 'Working Pro',
+      });
+    }
+
+    return baseGames;
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-5xl mx-auto px-4">

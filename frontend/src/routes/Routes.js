@@ -9,6 +9,7 @@ import DailyMissions from "../pages/DailyMissions";
 import StockSimulator from "../pages/StockSimulator";
 import BudgetChallenge from "../pages/BudgetChallenge";
 import GamesHub from "../pages/GamesHub";
+import WorkingProfessionalLab from "../pages/WorkingProfessionalLab";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 const Routerapp = () => (
@@ -27,6 +28,7 @@ const Routerapp = () => (
           <Route element={<ProtectedRoute><Quiz /></ProtectedRoute>} path="/quiz" exact />
           <Route element={<ProtectedRoute><DailyMissions /></ProtectedRoute>} path="/missions" exact />
           <Route element={<ProtectedRoute><GamesHub /></ProtectedRoute>} path="/games" exact />
+          <Route element={<ProtectedRoute><WorkingProfessionalLab /></ProtectedRoute>} path="/career-lab" exact />
           <Route element={<ProtectedRoute><StockSimulator /></ProtectedRoute>} path="/games/stocks" exact />
           <Route element={<ProtectedRoute><BudgetChallenge /></ProtectedRoute>} path="/games/budget" exact />
           <Route element={<Leaderboard />} path="/leaderboard" exact />

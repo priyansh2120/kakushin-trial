@@ -1,30 +1,30 @@
-import StockGame, {
-  STOCKS,
-  getSimulatedPrice,
-} from "../models/stockGame.model.js";
+import StockGame from "../models/stockGame.model.js";
 import User from "../models/user.model.js";
 import { generateStructuredResponse } from "../services/ai/geminiClient.js";
+import {
+  getMarketDataStatus,
+  getMarketStockBySymbol,
+  getMarketStocks,
+  refreshMarketStocksIfNeeded,
+} from "../services/marketData/stockMarketService.js";
 
-// Get stock market data (simulated prices)
+// Get stock market data backed by daily snapshots plus intraday simulation.
 export const getMarketData = async (req, res) => {
   try {
-    const marketData = STOCKS.map((stock) => {
-      const currentPrice = getSimulatedPrice(stock);
-      const previousPrice = stock.basePrice;
-      const change = currentPrice - previousPrice;
-      const changePercent = (change / previousPrice) * 100;
+    const [marketData, status] = await Promise.all([
+      getMarketStocks(),
+      getMarketDataStatus(),
+    ]);
 
-      return {
-        symbol: stock.symbol,
-        name: stock.name,
-        price: currentPrice,
-        change: Math.round(change * 100) / 100,
-        changePercent: Math.round(changePercent * 100) / 100,
-      };
-    });
-
-    res.json(marketData);
+    res.json(
+      marketData.map((stock) => ({
+        ...stock,
+        marketDataProvider: status.provider,
+        marketLastRefreshedAt: status.lastRefreshedAt,
+      }))
+    );
   } catch (error) {
+    console.error("Market data error:", error);
     res.status(500).json({ error: "Failed to fetch market data" });
   }
 };
@@ -40,11 +40,14 @@ export const getPortfolio = async (req, res) => {
       await game.save();
     }
 
+    const marketStocks = await getMarketStocks();
+    const stockMap = new Map(marketStocks.map((stock) => [stock.symbol, stock]));
+
     // Calculate current portfolio value
     let totalValue = game.cashBalance;
     const holdings = game.portfolio.map((item) => {
-      const stock = STOCKS.find((s) => s.symbol === item.symbol);
-      const currentPrice = stock ? getSimulatedPrice(stock) : item.avgBuyPrice;
+      const stock = stockMap.get(item.symbol);
+      const currentPrice = stock ? stock.price : item.avgBuyPrice;
       const value = item.shares * currentPrice;
       const pl = (currentPrice - item.avgBuyPrice) * item.shares;
       totalValue += value;
@@ -95,12 +98,12 @@ export const buyStock = async (req, res) => {
       return res.status(400).json({ error: "Invalid symbol or shares" });
     }
 
-    const stock = STOCKS.find((s) => s.symbol === symbol);
+    const stock = await getMarketStockBySymbol(symbol);
     if (!stock) {
       return res.status(400).json({ error: "Stock not found" });
     }
 
-    const currentPrice = getSimulatedPrice(stock);
+    const currentPrice = stock.price;
     const totalCost = currentPrice * shares;
 
     let game = await StockGame.findOne({ userId });
@@ -170,7 +173,7 @@ export const sellStock = async (req, res) => {
       return res.status(400).json({ error: "Invalid symbol or shares" });
     }
 
-    const stock = STOCKS.find((s) => s.symbol === symbol);
+    const stock = await getMarketStockBySymbol(symbol);
     if (!stock) {
       return res.status(400).json({ error: "Stock not found" });
     }
@@ -185,7 +188,7 @@ export const sellStock = async (req, res) => {
       return res.status(400).json({ error: "Insufficient shares" });
     }
 
-    const currentPrice = getSimulatedPrice(stock);
+    const currentPrice = stock.price;
     const totalValue = currentPrice * shares;
 
     // Add cash
@@ -297,5 +300,19 @@ export const getStockLeaderboard = async (req, res) => {
     res.json(leaderboard);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
+};
+
+export const refreshStockMarketData = async (_req, res) => {
+  try {
+    await refreshMarketStocksIfNeeded({ force: true });
+    const status = await getMarketDataStatus();
+    res.json({
+      success: true,
+      ...status,
+    });
+  } catch (error) {
+    console.error("Refresh stock market data error:", error);
+    res.status(500).json({ error: "Failed to refresh stock market data" });
   }
 };

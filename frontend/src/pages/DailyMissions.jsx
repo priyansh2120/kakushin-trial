@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { UserContext } from '../contexts/UserContext';
-import { Flame, CheckCircle2, Circle, Gift, Zap, Trophy } from 'lucide-react';
+import { Flame, CheckCircle2, Gift, Zap, Trophy, Lock } from 'lucide-react';
 import API_BASE_URL from '../config';
 
 const DailyMissions = () => {
@@ -9,7 +9,9 @@ const DailyMissions = () => {
   const [completedCount, setCompletedCount] = useState(0);
   const [totalMissions, setTotalMissions] = useState(0);
   const [loading, setLoading] = useState(true);
-  const { user, refreshUser } = useContext(UserContext);
+  const [actionMessage, setActionMessage] = useState(null);
+  const [claimingMission, setClaimingMission] = useState(null);
+  const { refreshUser } = useContext(UserContext);
 
   useEffect(() => {
     fetchMissions();
@@ -34,6 +36,8 @@ const DailyMissions = () => {
 
   const completeMission = async (missionKey) => {
     try {
+      setActionMessage(null);
+      setClaimingMission(missionKey);
       const res = await fetch(`${API_BASE_URL}/api/missions/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,12 +45,30 @@ const DailyMissions = () => {
         body: JSON.stringify({ missionKey }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        setActionMessage({
+          type: 'error',
+          text: data.error || 'Mission cannot be claimed yet.',
+        });
+        return;
+      }
+
       if (data.success) {
-        fetchMissions();
+        setActionMessage({
+          type: 'success',
+          text: 'Mission reward claimed successfully.',
+        });
+        await fetchMissions();
         refreshUser();
       }
     } catch (err) {
       console.error('Error completing mission:', err);
+      setActionMessage({
+        type: 'error',
+        text: 'Unable to claim this mission right now.',
+      });
+    } finally {
+      setClaimingMission(null);
     }
   };
 
@@ -101,40 +123,64 @@ const DailyMissions = () => {
 
         {/* Missions List */}
         <div className="space-y-4">
+          {actionMessage && (
+            <div className={`rounded-xl border px-4 py-3 text-sm ${
+              actionMessage.type === 'success'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                : 'border-rose-200 bg-rose-50 text-rose-700'
+            }`}>
+              {actionMessage.text}
+            </div>
+          )}
+
           {missions.map((mission) => (
             <div
               key={mission.key}
-              className={`bg-white rounded-xl border p-5 flex items-center justify-between transition-all ${
+              className={`bg-white rounded-xl border p-5 transition-all ${
                 mission.completed
                   ? 'border-emerald-200 bg-emerald-50/50'
                   : 'border-gray-200 hover:border-emerald-300 hover:shadow-md'
               }`}
             >
-              <div className="flex items-center gap-4">
-                <div className="text-3xl">{mission.icon}</div>
-                <div>
-                  <h3 className={`font-semibold ${mission.completed ? 'text-emerald-700' : 'text-gray-900'}`}>
-                    {mission.title}
-                  </h3>
-                  <p className="text-sm text-gray-500">{mission.description}</p>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="text-3xl">{mission.icon}</div>
+                  <div>
+                    <h3 className={`font-semibold ${mission.completed ? 'text-emerald-700' : 'text-gray-900'}`}>
+                      {mission.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">{mission.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1 text-sm font-semibold text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
+                    <Gift className="h-3.5 w-3.5" />
+                    +{mission.reward}
+                  </div>
+                  {mission.completed ? (
+                    <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  ) : mission.canClaim ? (
+                    <button
+                      onClick={() => completeMission(mission.key)}
+                      disabled={claimingMission === mission.key}
+                      className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      {claimingMission === mission.key ? 'Claiming...' : 'Claim'}
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500">
+                      <Lock className="h-4 w-4" />
+                      Locked
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1 text-sm font-semibold text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
-                  <Gift className="h-3.5 w-3.5" />
-                  +{mission.reward}
-                </div>
-                {mission.completed ? (
-                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
-                ) : (
-                  <button
-                    onClick={() => completeMission(mission.key)}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Claim
-                  </button>
-                )}
-              </div>
+
+              {!mission.completed && !mission.canClaim && (
+                <p className="mt-3 pl-[3.25rem] text-sm text-stone-500">
+                  {mission.eligibilityReason || 'Complete the mission activity today to unlock this reward.'}
+                </p>
+              )}
             </div>
           ))}
         </div>
