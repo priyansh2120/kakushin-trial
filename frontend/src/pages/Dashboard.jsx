@@ -11,7 +11,6 @@ import {
   RefreshCw,
   X,
   TrendingDown,
-  CheckCircle2,
   Flame,
   Wallet,
 } from 'lucide-react';
@@ -137,7 +136,7 @@ const BreakdownBar = ({ label, score, max }) => {
 };
 
 const Dashboard = () => {
-  const { user, refreshUser } = useContext(UserContext);
+  const { refreshUser } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [profile, setProfile] = useState(null);
