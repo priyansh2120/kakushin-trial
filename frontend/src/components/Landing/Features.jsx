@@ -19,7 +19,7 @@ const features = [
   {
     icon: MessageCircle,
     title: "AI Financial Chatbot",
-    description: "Chat with our multi-agent AI system for personalized financial advice powered by Google Gemini.",
+    description: "Chat with our multi-agent AI system for personalized financial advice powered by Groq.",
     color: "text-purple-500",
     bg: "bg-purple-50",
   },

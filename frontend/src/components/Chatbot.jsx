@@ -189,7 +189,7 @@ const Chatbot = () => {
                 <Send className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-gray-500 text-xs mt-2 text-center">Powered by Google Gemini • Multi-Agent AI</p>
+            <p className="text-gray-500 text-xs mt-2 text-center">Powered by Groq • Multi-Agent AI</p>
           </div>
         </div>
       )}

@@ -85,7 +85,7 @@ const Landing = () => {
         <div className="max-w-6xl mx-auto px-4 text-center">
           <p className="text-sm">
             © 2024 SmartLit — Built with ❤️ for financial literacy | 
-            Powered by Google Gemini AI
+            Powered by Groq AI
           </p>
         </div>
       </footer>
