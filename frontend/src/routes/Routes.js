@@ -10,6 +10,7 @@ import StockSimulator from "../pages/StockSimulator";
 import BudgetChallenge from "../pages/BudgetChallenge";
 import GamesHub from "../pages/GamesHub";
 import WorkingProfessionalLab from "../pages/WorkingProfessionalLab";
+import Dashboard from "../pages/Dashboard";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 const Routerapp = () => (
@@ -23,6 +24,7 @@ const Routerapp = () => (
           <Route element={<SignUp />} path="/signup" exact />
 
           {/* Protected routes */}
+          <Route element={<ProtectedRoute><Dashboard /></ProtectedRoute>} path="/dashboard" exact />
           <Route element={<ProtectedRoute><ExpensePage /></ProtectedRoute>} path="/expense" exact />
           <Route element={<ProtectedRoute><ChoreManagement /></ProtectedRoute>} path="/choremanagement" exact />
           <Route element={<ProtectedRoute><Quiz /></ProtectedRoute>} path="/quiz" exact />

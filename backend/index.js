@@ -14,6 +14,7 @@ import chatRoutes from "./routes/chat/chat.routes.js";
 import missionRoutes from "./routes/missions/mission.routes.js";
 import gameRoutes from "./routes/games/game.routes.js";
 import careerLabRoutes from "./routes/careerLab/careerLab.routes.js";
+import intelligenceRoutes from "./routes/intelligence/intelligence.routes.js";
 import cors from "cors";
 import User from "./models/user.model.js";
 
@@ -71,6 +72,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/missions", missionRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/career-lab", careerLabRoutes);
+app.use("/api/intelligence", intelligenceRoutes);
 
 app.get("/", (req, res) => {
   res.json({

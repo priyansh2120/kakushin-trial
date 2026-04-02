@@ -6,6 +6,9 @@ import Conversation from "../models/conversation.model.js";
 import User from "../models/user.model.js";
 import Expense from "../models/expense.model.js";
 import Income from "../models/income.model.js";
+import { canAfford } from "../services/intelligence/predictionService.js";
+import { projectMonthlySpending } from "../services/intelligence/predictionService.js";
+import { getUserProfile } from "../services/intelligence/userProfileService.js";
 
 // Build user context for AI agents
 const buildUserContext = async (userId) => {
@@ -15,11 +18,23 @@ const buildUserContext = async (userId) => {
     .limit(50);
   const incomes = await Income.find({ userId }).sort({ date: -1 }).limit(20);
 
+  // Enrich with intelligence data
+  let profile = null;
+  let projection = null;
+  try {
+    profile = await getUserProfile(userId);
+    projection = await projectMonthlySpending(userId);
+  } catch {
+    // Non-critical: AI context enrichment failure should not block chat
+  }
+
   return {
     user,
     expenses,
     incomes,
     monthlySavings: user?.monthlySavings || [],
+    profile,
+    projection,
   };
 };
 
@@ -189,5 +204,27 @@ export const getConversation = async (req, res) => {
     res.json(conversation);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch conversation" });
+  }
+};
+
+// "Can I afford X?" simulation endpoint
+export const affordabilityCheck = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { amount, itemName } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: "Valid amount is required" });
+    }
+
+    const result = await canAfford(userId, Number(amount));
+
+    res.json({
+      ...result,
+      itemName: itemName || `₹${amount} purchase`,
+    });
+  } catch (error) {
+    console.error("Affordability check error:", error);
+    res.status(500).json({ error: "Failed to check affordability" });
   }
 };
