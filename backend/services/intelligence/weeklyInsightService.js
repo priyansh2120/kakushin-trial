@@ -8,6 +8,9 @@ import { computeDisciplineScore } from "./disciplineScoreService.js";
  * Generates: top spending category, % change vs last week, improvement suggestions.
  */
 
+/** Threshold: weekend spending multiplier above which a warning is generated */
+const WEEKEND_SPIKE_THRESHOLD = 2;
+
 /**
  * Get the Monday of the week for a given date.
  */
@@ -158,7 +161,7 @@ const generateSuggestions = ({ totalSpent, totalIncome, categoryBreakdown, direc
     suggestions.push("Great job! Your spending decreased compared to last week. Keep it up!");
   }
 
-  if (weekendMultiplier > 2) {
+  if (weekendMultiplier > WEEKEND_SPIKE_THRESHOLD) {
     suggestions.push(
       `Weekend spending is ${weekendMultiplier}x your weekday average. Consider planning weekend activities in advance.`
     );

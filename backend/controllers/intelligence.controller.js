@@ -332,7 +332,10 @@ export const getSmartLeaderboard = async (req, res) => {
       }
 
       // Composite rank score
-      const consistency = Math.min(streak, 30) / 30; // Normalize streak to 0-1
+      // MAX_STREAK_CAP: 30 days is the maximum streak that contributes to ranking,
+      // preventing long-tenured users from having an insurmountable advantage.
+      const MAX_STREAK_CAP = 30;
+      const consistency = Math.min(streak, MAX_STREAK_CAP) / MAX_STREAK_CAP;
       const rankScore =
         disciplineScore * 0.5 +
         consistency * 30 +
