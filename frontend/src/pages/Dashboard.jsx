@@ -233,6 +233,7 @@ const Dashboard = () => {
 
   const unreadNudges = nudges.filter((n) => !n.read);
   const weekChange = weeklyInsight?.comparedToLastWeek;
+  const normalizedRiskLevel = profile?.riskLevel?.toLowerCase();
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -460,9 +461,9 @@ const Dashboard = () => {
                   </div>
                   <div
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
-                      profile.riskLevel === 'low'
+                      normalizedRiskLevel === 'low'
                         ? 'bg-emerald-50 text-emerald-700'
-                        : profile.riskLevel === 'medium'
+                        : normalizedRiskLevel === 'medium'
                           ? 'bg-amber-50 text-amber-700'
                           : 'bg-rose-50 text-rose-700'
                     }`}

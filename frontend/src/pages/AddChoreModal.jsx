@@ -3,6 +3,8 @@ import API_BASE_URL from '../config';
 
 const AddChoreModal = ({ onClose, user, refreshChores }) => {
   const [description, setDescription] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [priority, setPriority] = useState('Medium');
   const [isParent, setIsParent] = useState(false);
   const [secretKey, setSecretKey] = useState('');
 
@@ -16,6 +18,8 @@ const AddChoreModal = ({ onClose, user, refreshChores }) => {
         userId: user._id,
         description,
         date: new Date(),
+        dueDate: dueDate || null,
+        priority,
         addedByParent: isParent,
         secretKey: isParent ? secretKey : null,
       }),
@@ -33,6 +37,29 @@ const AddChoreModal = ({ onClose, user, refreshChores }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <input type="text" value={description} onChange={(e) => setDescription(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Deadline</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              >
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+              </select>
+            </div>
           </div>
           {user && user.age <= 16 && (
             <label className="flex items-center gap-2 text-sm">

@@ -11,6 +11,15 @@ import UserProfile from "../../models/userProfile.model.js";
  * score = base - overspending_penalty + saving_bonus + streak_bonus + improvement_factor
  */
 
+const getWeekKey = (date = new Date()) => {
+  const current = new Date(date);
+  const day = current.getDay();
+  const diff = current.getDate() - day + (day === 0 ? -6 : 1);
+  current.setDate(diff);
+  current.setHours(0, 0, 0, 0);
+  return current.toISOString().split("T")[0];
+};
+
 /**
  * Compute budget adherence score (0-30 points).
  */
@@ -123,17 +132,21 @@ export const computeDisciplineScore = async (userId) => {
 
   const total = budgetScore + savingsScore + streakScore + improvementScore;
   const clampedScore = Math.min(100, Math.max(0, total));
+  const weekKey = getWeekKey();
+  const existingProfile = await UserProfile.findOne({ userId }).select("weeklyScores");
+  const existingWeeklyScores = existingProfile?.weeklyScores || [];
+  const updatedWeeklyScores = [
+    ...existingWeeklyScores.filter((entry) => entry.week !== weekKey),
+    { week: weekKey, score: clampedScore },
+  ].slice(-12);
 
   // Persist to user profile
   await UserProfile.findOneAndUpdate(
     { userId },
     {
-      $set: { disciplineScore: clampedScore },
-      $push: {
-        weeklyScores: {
-          $each: [{ week: new Date().toISOString().split("T")[0], score: clampedScore }],
-          $slice: -12,
-        },
+      $set: {
+        disciplineScore: clampedScore,
+        weeklyScores: updatedWeeklyScores,
       },
     },
     { upsert: true }

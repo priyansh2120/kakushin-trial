@@ -98,7 +98,10 @@ export const detectCategorySpikes = async (userId) => {
  * Detect streak breaks: days without activity.
  */
 export const detectStreakBreaks = async (userId) => {
-  const progress = await DailyMissionProgress.find({ userId })
+  const progress = await DailyMissionProgress.find({
+    userId,
+    "completedMissions.0": { $exists: true },
+  })
     .sort({ date: -1 })
     .limit(7);
 

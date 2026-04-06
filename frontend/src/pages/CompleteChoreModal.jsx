@@ -3,6 +3,9 @@ import API_BASE_URL from '../config';
 
 const CompleteChoreModal = ({ onClose, chore, user, refreshChores }) => {
   const [secretKey, setSecretKey] = useState('');
+  const formattedDueDate = chore?.dueDate
+    ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(chore.dueDate))
+    : null;
 
   const handleComplete = async () => {
     await fetch(`${API_BASE_URL}/api/chore/${chore._id}`, {
@@ -23,6 +26,18 @@ const CompleteChoreModal = ({ onClose, chore, user, refreshChores }) => {
       <div className="bg-white p-6 rounded-2xl shadow-xl w-96">
         <h2 className="text-lg font-bold mb-2">Complete Chore</h2>
         <p className="text-sm text-gray-500 mb-4">"{chore.description}"</p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {formattedDueDate && (
+            <span className="text-xs bg-sky-50 text-sky-700 px-2.5 py-1 rounded-full border border-sky-100">
+              Deadline: {formattedDueDate}
+            </span>
+          )}
+          {chore.priority && (
+            <span className="text-xs bg-stone-100 text-stone-700 px-2.5 py-1 rounded-full border border-stone-200">
+              Priority: {chore.priority}
+            </span>
+          )}
+        </div>
         {chore.addedByParent && (
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Parent Secret Key</label>

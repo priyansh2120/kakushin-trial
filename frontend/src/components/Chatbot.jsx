@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { MessageCircle, X, Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
 import { UserContext } from '../contexts/UserContext';
 import API_BASE_URL from '../config';
 

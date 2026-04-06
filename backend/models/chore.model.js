@@ -27,6 +27,15 @@ const choreSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  dueDate: {
+    type: Date,
+    default: null
+  },
+  priority: {
+    type: String,
+    enum: ['Low', 'Medium', 'High'],
+    default: 'Medium'
+  },
   dateCompleted: {
     type: Date
   }

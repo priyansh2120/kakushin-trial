@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import ChartComponent from './ChartComponent';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Landmark, Pencil, Plus, Sparkles, TrendingUp, Trash2, Wallet2 } from 'lucide-react';
 import API_BASE_URL from '../../config';
 import 'chart.js/auto';
 
@@ -77,28 +77,64 @@ const IncomePage = () => {
   };
 
   const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
+  const averageIncome = incomes.length > 0 ? Math.round(totalIncome / incomes.length) : 0;
+  const topIncomeSource = Object.entries(
+    incomes.reduce((acc, income) => {
+      acc[income.source] = (acc[income.source] || 0) + income.amount;
+      return acc;
+    }, {})
+  ).sort((a, b) => b[1] - a[1])[0]?.[0] || 'No source yet';
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div>
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-[1.75rem] border border-emerald-100 p-6 mb-6 shadow-[0_18px_40px_rgba(15,23,42,0.05)] overflow-hidden">
+        <div className="rounded-[1.5rem] border border-emerald-100 bg-[linear-gradient(135deg,#ecfdf5_0%,#ffffff_55%,#eff6ff_100%)] p-5 mb-5">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-600 border border-emerald-100 mb-3">
+                <TrendingUp className="h-3.5 w-3.5" />
+                Inflow Tracker
+              </div>
+              <h2 className="text-2xl font-bold text-stone-900">Income</h2>
+              <p className="text-4xl font-bold text-emerald-600 mt-2">₹{totalIncome.toLocaleString()}</p>
+            </div>
+            <button onClick={toggleModal} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 shadow-sm">
+              <Plus className="h-4 w-4" /> Add Income
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl bg-white/80 border border-white p-3">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Entries</p>
+              <p className="text-lg font-semibold text-stone-900 mt-1">{incomes.length}</p>
+            </div>
+            <div className="rounded-2xl bg-white/80 border border-white p-3">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Avg Credit</p>
+              <p className="text-lg font-semibold text-stone-900 mt-1">₹{averageIncome.toLocaleString()}</p>
+            </div>
+            <div className="rounded-2xl bg-white/80 border border-white p-3">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Top Source</p>
+              <p className="text-sm font-semibold text-stone-900 mt-1 truncate">{topIncomeSource}</p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Income</h2>
-            <p className="text-2xl font-bold text-emerald-600">₹{totalIncome.toLocaleString()}</p>
+            <p className="text-sm font-semibold text-stone-900">Recent income activity</p>
+            <p className="text-sm text-stone-500">A clean view of what money is coming in and where it comes from.</p>
           </div>
-          <button onClick={toggleModal} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1">
-            <Plus className="h-4 w-4" /> Add Income
-          </button>
         </div>
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+
+        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
           {incomes.map(income => (
-            <div key={income._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div key={income._id} className="flex items-center justify-between p-3.5 bg-stone-50 rounded-2xl hover:bg-stone-100 transition-colors border border-stone-100">
               <div className="flex-1">
                 <div className="flex items-center gap-3">
                   <span className="font-semibold text-sm text-gray-900">₹{income.amount}</span>
-                  <span className="text-xs bg-emerald-100 px-2 py-0.5 rounded-full text-emerald-700">{income.source}</span>
+                  <span className="text-xs bg-emerald-100 px-2.5 py-1 rounded-full text-emerald-700 border border-emerald-200">{income.source}</span>
                 </div>
                 {income.description && <p className="text-xs text-gray-500 mt-0.5">{income.description}</p>}
               </div>
@@ -108,12 +144,33 @@ const IncomePage = () => {
               </div>
             </div>
           ))}
-          {incomes.length === 0 && <p className="text-center text-gray-400 py-8 text-sm">No income recorded yet</p>}
+          {incomes.length === 0 && (
+            <div className="rounded-[1.5rem] border border-dashed border-emerald-200 bg-[linear-gradient(135deg,#f0fdf4_0%,#ffffff_100%)] p-8 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+                <Wallet2 className="h-7 w-7" />
+              </div>
+              <p className="text-xl font-semibold text-stone-900">No income recorded yet</p>
+              <p className="text-sm text-stone-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                Start by logging your first inflow so the dashboard can show how money enters your life, whether it is salary, pocket money, freelance work, or gifts.
+              </p>
+              <div className="flex flex-wrap justify-center gap-2 mt-5">
+                {['Salary', 'Freelance', 'Allowance', 'Gift'].map((item) => (
+                  <span key={item} className="rounded-full border border-emerald-100 bg-white px-3 py-1 text-xs font-medium text-stone-600">
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-sky-50 text-sky-700 px-4 py-2 text-xs font-medium border border-sky-100">
+                <Landmark className="h-3.5 w-3.5" />
+                Add a few sources first to unlock the income mix chart
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {incomes.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="bg-white rounded-[1.5rem] border border-stone-200 p-4 shadow-sm">
           <ChartComponent data={getIncomeChartData()} title="Income Sources" />
         </div>
       )}
@@ -122,7 +179,10 @@ const IncomePage = () => {
         className="bg-white p-6 rounded-2xl shadow-xl max-w-md mx-auto mt-20 border border-gray-200"
         overlayClassName="fixed inset-0 bg-black/50 flex justify-center items-start z-50 pt-10"
       >
-        <h2 className="text-lg font-bold mb-4">{editIncomeId ? 'Update Income' : 'Add Income'}</h2>
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="h-5 w-5 text-emerald-500" />
+          <h2 className="text-lg font-bold">{editIncomeId ? 'Update Income' : 'Add Income'}</h2>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-3">
           <input type="number" name="amount" value={formData.amount} onChange={handleChange} placeholder="Amount (₹)" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required />
           <input type="text" name="source" value={formData.source} onChange={handleChange} placeholder="Source (Salary, Freelance...)" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required />

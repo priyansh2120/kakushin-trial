@@ -78,7 +78,10 @@ const computeAvgDailySpend = (expenses) => {
  * Get streak data from mission progress.
  */
 const getStreakData = async (userId) => {
-  const progress = await DailyMissionProgress.find({ userId })
+  const progress = await DailyMissionProgress.find({
+    userId,
+    "completedMissions.0": { $exists: true },
+  })
     .sort({ date: -1 })
     .limit(30);
 

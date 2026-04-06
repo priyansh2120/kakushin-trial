@@ -30,12 +30,17 @@ export const generateSecretKey = async (req, res) => {
 
 export const addChore = async (req, res) => {
   try {
-    const { userId, description, addedByParent, secretKey } = req.body;
+    const { userId, description, addedByParent, secretKey, dueDate, priority } = req.body;
 
     // Verify user exists
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    const parsedDueDate = dueDate ? new Date(dueDate) : null;
+    if (dueDate && Number.isNaN(parsedDueDate.getTime())) {
+      return res.status(400).json({ message: "Invalid chore deadline" });
     }
 
     // Verify if the request is made by a parent and validate the secret key if so
@@ -53,6 +58,8 @@ export const addChore = async (req, res) => {
           description,
           addedByParent,
           addedBy: user._id,
+          dueDate: parsedDueDate,
+          priority: priority || "Medium",
         });
 
         await chore.save();
@@ -64,6 +71,8 @@ export const addChore = async (req, res) => {
         description,
         addedByParent,
         addedBy: user._id,
+        dueDate: parsedDueDate,
+        priority: priority || "Medium",
       });
 
       await chore.save();
